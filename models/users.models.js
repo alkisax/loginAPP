@@ -7,10 +7,27 @@ const userSchema = new Schema({
     required: [true, 'username is required'],
     unique:true
   },
-  password:{
+  name:{
+    type: String,
+    required: false
+  },
+  roles:{
+    type: [String],
+    default: ['user']
+  },
+  email:{
+    type: String,
+    required: false,
+    unique: true
+  },
+  // password:{
+  //   type: String,
+  //   required: [true, 'password is required'],
+  // },
+  hashedPassword: {
     type: String,
     required: [true, 'password is required'],
-  },
+  }
 },
 {
   collection: 'users',
