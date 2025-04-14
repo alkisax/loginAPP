@@ -1,249 +1,59 @@
-Οδηγός δημιουργίας Full-Stack εφαρμογής Login με MERN Stack
-Αυτός ο οδηγός περιγράφει βήμα προς βήμα τη διαδικασία δημιουργίας μιας εφαρμογής login χρησιμοποιώντας τις τεχνολογίες του MERN stack (MongoDB, Express, React, Node.js).
-Περιεχόμενα
+# Οδηγίες Δημιουργίας Login Application
 
-Αρχικοποίηση Git Repository
-Εγκατάσταση και ρύθμιση του Frontend (React)
-Εγκατάσταση και ρύθμιση του Backend (Express)
-Δημιουργία βασικής δομής του Backend
-Δημιουργία του Frontend Login Form
-Υλοποίηση CRUD λειτουργιών
-Διαχείριση χρηστών και κωδικών πρόσβασης
-Υλοποίηση JWT Authentication
-Υλοποίηση Google Authentication
-Προχωρημένες λειτουργίες
-Δοκιμή της εφαρμογής
-
-Αρχικοποίηση Git Repository
-Εδώ δημιουργούμε και συνδέουμε το τοπικό μας repository με το απομακρυσμένο στο GitHub για έλεγχο έκδοσης και διευκόλυνση της συνεργασίας.
-bash# Δημιουργία τοπικού repository
+## Αρχικοποίηση Git
+```bash
 git init
-
-# Σύνδεση με το απομακρυσμένο repository στο GitHub
 git remote add origin git@github.com:alkisax/loginAPP.git
-
-# Λήψη του περιεχομένου από το απομακρυσμένο repository
 git pull origin main
-Εγκατάσταση και ρύθμιση του Frontend (React)
-Σε αυτό το βήμα δημιουργούμε το React project χρησιμοποιώντας το Vite και εγκαθιστούμε τις απαραίτητες βιβλιοθήκες για το frontend της εφαρμογής. Το Redux θα χρησιμοποιηθεί για διαχείριση καταστάσεων, ενώ το axios για επικοινωνία με το backend.
-bash# Δημιουργία νέου React project με Vite
+```
+
+## Δημιουργία Frontend (Vite)
+```bash
 npm create vite@latest frontend -- --template react
-
-# Μετακίνηση στον κατάλογο του frontend
-cd frontend
-
-# Εγκατάσταση των βασικών εξαρτήσεων
 npm install
+npm install axios
+npm install react-bootstrap
+npm install react-router-dom
+npm install redux
+npm install react-redux
+npm install @reduxjs/toolkit
+```
 
-# Εγκατάσταση των επιπρόσθετων βιβλιοθηκών
-npm install axios               # Για HTTP αιτήματα
-npm install react-bootstrap     # Για στυλιστικά components
-npm install react-router-dom    # Για δρομολόγηση στο frontend
-npm install redux               # Διαχείριση καταστάσεων
-npm install react-redux         # Σύνδεση React με Redux
-npm install @reduxjs/toolkit    # Εργαλεία για απλοποίηση χρήσης του Redux
-Εγκατάσταση και ρύθμιση του Backend (Express)
-Εδώ δημιουργούμε το Express backend και εγκαθιστούμε τις απαραίτητες βιβλιοθήκες. Το mongoose θα χρησιμοποιηθεί για τη σύνδεση με τη MongoDB, το bcrypt για κρυπτογράφηση κωδικών, και το jsonwebtoken για την αυθεντικοποίηση.
-bash# Δημιουργία φακέλου για το backend (αν δεν βρισκόμαστε ήδη στον γονικό φάκελο)
-cd ..
-
-# Αρχικοποίηση του Node.js project
+## Δημιουργία Backend
+```bash
 npm init
+npm install express
+npm install mongoose
+npm install dotenv
+npm install bcrypt
+npm install jsonwebtoken
+npm install swagger-ui-express
+npm install mongoose-to-swagger
+npm install swagger-jsdoc
+npm install winston
+npm install winston-daily-rotate-file
+npm install winston-mongodb
+npm install google-auth-library
+npm install axios
+npm install cors
+npm install morgan
+npm install express-async-errors
+npm install --save-dev nodemon
+npm install --save-dev supertest
+npm install --save-dev cross-env
+npm install prop-types
+npm install --save-dev jest @babel/preset-env @babel/preset-react eslint-plugin-jest
+npm install --save-dev deep-freeze
+```
 
-# Εγκατάσταση βασικών βιβλιοθηκών
-npm install express             # Web framework
-npm install mongoose            # MongoDB ODM
-npm install dotenv              # Διαχείριση μεταβλητών περιβάλλοντος
-npm install bcrypt              # Κρυπτογράφηση κωδικών
-npm install jsonwebtoken        # Διαχείριση JWT tokens
-npm install swagger-ui-express  # API documentation
-npm install mongoose-to-swagger # Μετατροπή mongoose models σε swagger schemas
-npm install winston             # Logging
-npm install winston-daily-rotate-file # Περιστροφή αρχείων καταγραφής
-npm install winston-mongodb     # Logging στη MongoDB
-npm install google-auth-library # Αυθεντικοποίηση με Google
-npm install axios               # HTTP client
-npm install cors                # Cross-Origin Resource Sharing
-npm install morgan              # HTTP request logger
-npm install express-async-errors # Χειρισμός σφαλμάτων ασύγχρονων λειτουργιών
-npm install prop-types          # Type checking για React props
+**Σημείωση**: Επειδή υπήρξε conflict με το express-async-errors, έγινε downgrade στο express:
+```bash
+npm install express@4
+```
 
-# Εγκατάσταση εξαρτήσεων για ανάπτυξη
-npm install --save-dev nodemon  # Αυτόματη επανεκκίνηση του server
-npm install --save-dev supertest # Για testing HTTP
-npm install --save-dev cross-env # Διαχείριση μεταβλητών περιβάλλοντος
-npm install --save-dev jest @babel/preset-env @babel/preset-react eslint-plugin-jest # Για testing
-npm install --save-dev deep-freeze # Για immutable objects στα tests
-Σημείωση: Αν αντιμετωπίσετε πρόβλημα με το express-async-errors, μπορείτε να κάνετε downgrade του express:
-bashnpm install express@4
-Δημιουργία βασικής δομής του Backend
-Σε αυτή την ενότητα θα δημιουργήσουμε τη βασική δομή του backend με τη ρύθμιση του server, τη σύνδεση με τη MongoDB και το σχεδιασμό του API μας.
-1. Δημιουργία αρχείου περιβάλλοντος
-Το .env αρχείο περιέχει ευαίσθητες πληροφορίες όπως συνδέσεις με βάσεις δεδομένων που δεν πρέπει να αποθηκεύονται στο version control.
-Δημιουργήστε ένα αρχείο .env στον κεντρικό φάκελο του backend:
-MONGODB_URI = mongodb+srv://username:password@cluster0.example.mongodb.net/loginApp?retryWrites=true&w=majority
-SECRET = yourSecretKeyForJWT
-GOOGLE_CLIENT_ID = yourGoogleClientId
-GOOGLE_CLIENT_SECRET = yourGoogleClientSecret
-REDIRECT_URI = http://localhost:3000/api/auth/google/callback
-2. Οργάνωση του backend κώδικα
-Η σωστή οργάνωση του κώδικα είναι σημαντική για τη συντηρησιμότητα και την επεκτασιμότητα της εφαρμογής.
-Δημιουργήστε τους ακόλουθους φακέλους:
-
-models: Για τα mongoose models
-controllers: Για τους controllers του API
-routes: Για τα endpoints του API
-services: Για την επιχειρηματική λογική της εφαρμογής
-
-3. Προσθήκη scripts στο package.json
-Τα scripts στο package.json διευκολύνουν την εκτέλεση συχνών εργασιών όπως την εκκίνηση του server.
-Προσθέστε τα παρακάτω scripts στο package.json:
-json"scripts": {
-  "start": "node server.js",
-  "dev": "node --watch server.js",
-  "test": "echo \"Error: no test specified\" && exit 1"
-}
-4. Δημιουργία του μοντέλου User
-Το μοντέλο User ορίζει τη δομή των δεδομένων χρήστη στη MongoDB και περιλαμβάνει πεδία για το όνομα χρήστη, το όνομα, τους ρόλους, το email και τον κωδικό πρόσβασης.
-Δημιουργήστε το αρχείο models/users.models.js:
-javascriptconst mongoose = require("mongoose")
-const Schema = mongoose.Schema
-const userSchema = new Schema({
-  username:{
-    type: String,
-    required: [true, 'username is required'],
-    unique:true
-  },
-  name:{
-    type: String,
-    required: false
-  },
-  roles:{
-    type: [String],
-    default: ['user']
-  },
-  email:{
-    type: String,
-    required: false,
-    unique: true
-  },
-  hashedPassword:{
-    type: String,
-    required: [true, 'password is required'],
-  },
-},
-{
-  collection: 'users',
-  timestamps: true
-})
-module.exports = mongoose.model('User', userSchema)
-5. Δημιουργία του User Controller
-Ο controller περιέχει τις λειτουργίες που χειρίζονται τα HTTP αιτήματα για τους χρήστες.
-Δημιουργήστε το αρχείο controllers/user.controller.js:
-javascriptconst User = require('../models/users.models')
-const bcrypt = require('bcrypt')
-const authService = require('../services/auth.service')
-
-exports.findAll = async (req,res) => {
-  const token = authService.getTokenFrom(req)
-  const verificationResult = authService.verifyAccessToken(token)
-  
-  if (!verificationResult.verified) {
-    return res.status(401).json({
-      status: false,
-      error: verificationResult.data
-    })
-  }
-  
-  if (!verificationResult.data.roles.includes('admin')) {
-    return res.status(403).json({
-      status: false,
-      error: 'Forbidden'
-    })
-  }
-
-  const results = await User.find()
-  res.json({
-    status: true,
-    data: results
-  })
-}
-
-exports.create = async (req,res) => {
-  const username = req.body.username
-  const name = req.body.name
-  const password = req.body.password
-  const email = req.body.email
-  const roles = req.body.roles
-
-  const saltOrRounds = 10
-  const hashedPassword = await bcrypt.hash(password, saltOrRounds)
-
-  try {
-    const newUser = new User({
-      username: username,
-      name: name,
-      hashedPassword: hashedPassword,
-      email: email,
-      roles: roles
-    })
-    await newUser.save()
-    res.status(201).json(newUser)
-  } catch(error) {
-    res.status(400).json({error: error.message})
-  }
-}
-6. Δημιουργία των User Routes
-Τα routes καθορίζουν τα URL endpoints και τους αντίστοιχους controllers για κάθε HTTP λειτουργία.
-Δημιουργήστε το αρχείο routes/user.routes.js:
-javascriptconst express = require('express')
-const router = express.Router()
-const userController = require('../controllers/user.controller.js')
-
-router.get('/', userController.findAll)
-router.post('/', userController.create)
-
-module.exports = router
-7. Δημιουργία του κεντρικού server
-Το αρχείο server.js είναι το σημείο εκκίνησης της εφαρμογής backend και ρυθμίζει το Express, τη σύνδεση με τη MongoDB, και τα routes.
-Δημιουργήστε το αρχείο server.js:
-javascriptrequire('dotenv').config()
-require('express-async-errors')
-const express = require('express')
-const cors = require('cors')
-const mongoose = require('mongoose')
-const userRoutes = require('./routes/user.routes.js')
-const authRoutes = require('./routes/auth.routes.js')
-const { log } = require('winston')
-
-const app = express()
-app.use(cors())
-app.use(express.static('dist')) // για σερβίρισμα του React build
-app.use(express.json());
-
-mongoose.set('strictQuery', false)
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('connected to MongoDB')
-  })
-  .catch((error) => {
-    console.log('error connecting to MongoDB:', error.message)
-  })
-
-app.use('/api/users', userRoutes)
-app.use('/api/login', authRoutes)
-app.use('/api/auth', authRoutes)
-
-// Εκκίνηση του server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-module.exports = app
-Δημιουργία του Frontend Login Form
-Το login form είναι το βασικό συστατικό του frontend και επιτρέπει στους χρήστες να εισάγουν τα στοιχεία τους.
-jsxreturn (
+## Δημιουργία Login Form
+```jsx
+return (
   <>
     <form onSubmit={handleLogin}>
       <div>
@@ -264,14 +74,16 @@ jsxreturn (
         autoComplete="password"
         />
       </div>
-      <button type="submit">Login</button>
     </form>
   </>
 )
-Προσθήκη Custom View για συνδεδεμένους χρήστες
-Προσθέτουμε ένα component που θα εμφανίζεται όταν ο χρήστης είναι συνδεδεμένος.
-Δημιουργήστε το αρχείο components/userLogedInView.jsx:
-jsxconst UserLogedInView = () => {
+```
+
+## Custom View στο Frontend
+
+Προσθήκη του component `userLogedInView.jsx`:
+```jsx
+const UserLogedInView = () => {
   return (
     <>
       <h1>Welcome user</h1>
@@ -279,9 +91,10 @@ jsxconst UserLogedInView = () => {
   )
 }
 export default UserLogedInView
-Και τροποποιήστε το App.jsx:
-jsximport { useState } from 'react'
-import LoginForm from './components/LoginForm'
+```
+
+Ενημέρωση του `App.jsx`:
+```jsx
 import UserLogedInView from './components/userLogedInView'
 
 const App = () => {
@@ -295,20 +108,229 @@ const App = () => {
     </div>
   )
 }
+```
 
-export default App
-Υλοποίηση CRUD λειτουργιών
-Για να δοκιμάσουμε την εφαρμογή, χρειαζόμαστε τη δυνατότητα δημιουργίας χρηστών, που υλοποιήθηκε παραπάνω με τη λειτουργία POST.
-Διαχείριση χρηστών και κωδικών πρόσβασης
-Σε αυτό το βήμα, τροποποιούμε το μοντέλο χρήστη για να αποθηκεύουμε κωδικούς πρόσβασης με ασφάλεια, χρησιμοποιώντας το bcrypt για κρυπτογράφηση.
-Μετατροπή του πεδίου password σε hashedPassword
-Αυτή η αλλαγή είναι κρίσιμη για την ασφάλεια, καθώς δεν αποθηκεύουμε ποτέ τους κωδικούς πρόσβασης σε απλό κείμενο στη βάση δεδομένων.
-Υλοποίηση JWT Authentication
-Το JSON Web Token (JWT) παρέχει έναν ασφαλή τρόπο για την αυθεντικοποίηση των χρηστών μεταξύ των αιτημάτων. Σε αυτό το τμήμα, δημιουργούμε τις υπηρεσίες αυθεντικοποίησης και το endpoint για το login.
-1. Δημιουργία του Auth Service
-Το auth service παρέχει λειτουργίες για την παραγωγή και επαλήθευση των JWT tokens και την επαλήθευση κωδικών πρόσβασης.
-Δημιουργήστε το αρχείο services/auth.service.js:
-javascriptconst jwt = require('jsonwebtoken')
+## Δημιουργία Βασικού CRUD στο Backend
+
+Προσθήκη scripts στο `package.json`:
+```json
+"scripts": {
+  "start": "node server.js",
+  "dev": "node --watch server.js",
+  "test": "echo \"Error: no test specified\" && exit 1"
+}
+```
+
+## Δημιουργία .env
+```
+MONGODB_URI = mongodb+srv://alkis:{password}@cluster0.8ioq6.mongodb.net/loginAp?retryWrites=true&w=majority&appName=Cluster0
+```
+
+## Οργάνωση Φακέλων
+Δημιουργία φακέλων: routes, models, controllers, services
+
+## Δημιουργία Models
+
+### users.models.js
+```javascript
+const mongoose = require("mongoose")
+const Schema = mongoose.Schema
+const userSchema = new Schema({
+  username:{
+    type: String,
+    required: [true, 'username is required'],
+    unique:true
+  },
+  name:{
+    type: String,
+    required: false
+  },
+  roles:{
+    type: [String],
+    default: ['user']
+  },
+  email:{
+    type: String,
+    required: false,
+    unique: true
+  },
+  password:{
+    type: String,
+    required: [true, 'password is required'],
+  },
+},
+{
+  collection: 'users',
+  timestamps: true
+})
+module.exports = mongoose.model('User', userSchema)
+```
+
+## Δημιουργία Controllers
+
+### user.controller.js
+```javascript
+const User = require('../models/users.models')
+
+exports.findAll = async (req,res) => {
+ const results = await User.find()
+ res.json(results)
+}
+```
+
+## Δημιουργία Routes
+
+### user.routes.js
+```javascript
+const express = require('express')
+const router = express.Router()
+const userController = require('../controllers/user.controller.js')
+
+router.get ('/', userController.findAll)
+
+module.exports = router
+```
+
+## Δημιουργία Server
+
+### server.js
+```javascript
+require('dotenv').config()
+require('express-async-errors')
+const express = require('express')
+const cors = require('cors')
+const mongoose = require('mongoose')
+const userRoutes = require('./routes/user.routes.js')
+const { log } = require('winston')
+
+const app = express()
+app.use(cors())
+app.use(express.static('dist')) // να το δοκιμασω
+app.use(express.json());
+
+mongoose.set('strictQuery', false)
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    // console.log('connected to MongoDB', process.env.MONGODB_URI)
+    console.log('connected to MongoDB')
+  })
+  .catch((error) => {
+    console.log('error connecting to MongoDB:', error.message)
+  })
+
+app.use('/api/users', userRoutes)
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+module.exports = app
+```
+
+## Προσθήκη Λειτουργίας Δημιουργίας Χρήστη
+
+### Ενημέρωση του user.controller.js
+```javascript
+exports.create = async (req,res) => {
+  const username = req.body.username
+  const name = req.body.name
+  const password = req.body.password
+  const email = req.body.email
+  const roles = req.body.roles
+
+  // na prostethei elegxos me if
+
+  try {
+    const newUser = new User({
+      username: username,
+      name: name,
+      password: password,
+      email: email,
+      roles: roles
+    })
+    await newUser.save()
+    res.status(201).json(newUser)
+  } catch(error) {
+    res.status(400).json({error: error.message})
+  }
+}
+```
+
+### Ενημέρωση του user.routes.js
+```javascript
+router.get ('/', userController.findAll)
+router.post('/', userController.create)
+```
+
+## Δοκιμή με Postman
+
+- GET στο `localhost:3000/api/users`: Λαμβάνουμε `{ "status": true, "data": [] }`
+- POST στο `localhost:3000/api/users` με body:
+  ```json
+  {
+      "username":"alkisax",
+      "name":"alkis",
+      "roles":["admin"],
+      "email": "alkisax@gmail.com",
+      "password":"123"
+  }
+  ```
+  Λαμβάνουμε:
+  ```json
+  {
+      "username": "alkisax",
+      "name": "alkis",
+      "roles": [
+          "admin"
+      ],
+      "email": "alkisax@gmail.com",
+      "password": "123",
+      "_id": "67fc141a3af9a6a44597fc51",
+      "createdAt": "2025-04-13T19:44:26.990Z",
+      "updatedAt": "2025-04-13T19:44:26.990Z",
+      "__v": 0
+  }
+  ```
+
+## Μετατροπή του Password σε hashedPassword
+
+### Ενημέρωση του users.models.js
+```javascript
+// password:{
+//   type: String,
+//   required: [true, 'password is required'],
+// },
+hashedPassword: {
+  type: String,
+  required: [true, 'password is required'],
+}
+```
+
+### Ενημέρωση του user.controller.js
+```javascript
+const bcrypt = require('bcrypt')
+
+// Στο exports.create
+const SaltOrRounds = 10
+const hashedPassword = await bcrypt.hash(password, SaltOrRounds)
+
+// Και το newUser γίνεται:
+const newUser = new User({
+  username: username,
+  name: name,
+  hashedPassword: hashedPassword,
+  email: email,
+  roles: roles
+})
+```
+
+## Δημιουργία Login Endpoint
+
+### services/auth.service.js
+```javascript
+const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
 generateAccessToken = (user) => {
@@ -345,110 +367,193 @@ const verifyAccessToken = (token) => {
   }
 } 
 
-const getTokenFrom = (req) => {
-  const authorization = req.get('authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.substring(7)
-  }
-  return null
-}
-
 module.exports = {
   generateAccessToken,
   verifyPassword,
-  verifyAccessToken,
-  getTokenFrom
+  verifyAccessToken
 }
-2. Δημιουργία του Auth Controller
-Ο auth controller χειρίζεται τα αιτήματα login και επιστρέφει ένα JWT token αν η αυθεντικοποίηση είναι επιτυχής.
-Δημιουργήστε το αρχείο controllers/auth.controller.js:
-javascriptconst User = require('../models/users.models')
-const authService = require('../services/auth.service')
+```
 
-exports.login = async (req, res) => {
-  const { username, password } = req.body
+### auth.controller.js
+```javascript
+const bcrypt = require('bcrypt')
+const User = require('../models/users.models')
+
+exports.findAll = async (req,res) => {
+ const results = await User.find()
+ res.json({
+  status: true,
+  data: results
+})
+}
+
+exports.create = async (req,res) => {
+  let data = req.body
+
+  const username = req.body.username
+  const name = req.body.name
+  const password = req.body.password
+  const email = req.body.email
+  const roles = req.body.roles
+
+  const SaltOrRounds = 10
+  const hashedPassword = await bcrypt.hash(password, SaltOrRounds)
+
+  // na prostethei elegxos me if
 
   try {
-    const user = await User.findOne({ username })
-    
-    if (!user) {
-      return res.status(401).json({
-        status: false,
-        error: 'Invalid username or password'
-      })
-    }
-    
-    const passwordCorrect = await authService.verifyPassword(password, user.hashedPassword)
-    
-    if (!passwordCorrect) {
-      return res.status(401).json({
-        status: false,
-        error: 'Invalid username or password'
-      })
-    }
-    
-    const token = authService.generateAccessToken(user)
-    
-    res.status(200).json({
-      status: true,
-      data: {
-        token,
-        user: {
-          username: user.username,
-          email: user.email,
-          roles: user.roles,
-          id: user._id
-        }
-      }
+    const newUser = new User({
+      username: username,
+      name: name,
+      hashedPassword: hashedPassword,
+      email: email,
+      roles: roles
     })
-  } catch (error) {
-    res.status(500).json({
-      status: false,
-      error: error.message
-    })
+    await newUser.save()
+    res.status(201).json(newUser)
+  } catch(error) {
+    res.status(400).json({error: error.message})
   }
 }
-3. Δημιουργία των Auth Routes
-Τα auth routes παρέχουν τα endpoints για login και άλλες λειτουργίες αυθεντικοποίησης.
-Δημιουργήστε το αρχείο routes/auth.routes.js:
-javascriptconst express = require('express')
+```
+
+### auth.routes.js
+```javascript
+const express = require('express')
 const router = express.Router()
 const authController = require('../controllers/auth.controller')
 
 router.post('/', authController.login)
-router.get('/google/callback', authController.googleLogin)
 
 module.exports = router
-Υλοποίηση Google Authentication
-Σε αυτό το τμήμα, προσθέτουμε υποστήριξη για login με Google, χρησιμοποιώντας το OAuth 2.0.
-1. Ρύθμιση των Google OAuth Credentials
-Για να χρησιμοποιήσετε το Google OAuth, πρέπει να δημιουργήσετε ένα project στο Google Cloud Platform και να αποκτήσετε τα client credentials.
+```
 
-Επισκεφθείτε το https://cloud.google.com/gcp
-Μεταβείτε στην κονσόλα
-Επιλέξτε ή δημιουργήστε νέο project
-Πηγαίνετε στο API και services > Credentials
-Δημιουργήστε νέο OAuth client ID
-Επιλέξτε "Web application"
-Ορίστε το redirect URI ως: http://localhost:3000/api/auth/google/callback
+### Ενημέρωση server.js
+```javascript
+const authRoutes = require('./routes/auth.routes.js')
 
-2. Προσθήκη των Google Credentials στο .env
-Προσθέστε τα client credentials που λάβατε από το Google στο .env αρχείο.
-3. Υλοποίηση του Google Login Controller
-Προσθέστε την ακόλουθη μέθοδο στο controllers/auth.controller.js:
-javascriptexports.googleLogin = async(req, res) => {
+app.use('/api/users', userRoutes)
+app.use('/api/login', authRoutes)
+```
+
+## Δοκιμή Login με Postman
+
+- POST στο `localhost:3000/api/login` με body:
+  ```json
+  {
+      "username": "alkisax",
+      "password": "123"
+  }
+  ```
+  Λαμβάνουμε:
+  ```json
+  {
+    "status": true,
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFsa2lzYXgiLCJlbWFpbCI6ImFsa2lzYXhAZ21haWwuY29tIiwicm9sZXMiOlsiYWRtaW4iXSwiaWQiOiI2N2ZjYTljODI1YWM4ZTBhMTM0N2JjZDQiLCJpYXQiOjE3NDQ2MTIzMTksImV4cCI6MTc0NDYxNTkxOX0.BCsm61ls3meU3ZOxgeQrZ3fNFTm7_5jru65qfrOBKyg",
+        "user": {
+            "username": "alkisax",
+            "email": "alkisax@gmail.com",
+            "roles": [
+                "admin"
+            ],
+            "id": "67fca9c825ac8e0a1347bcd4"
+        }
+     }
+  }
+  ```
+
+## Επαλήθευση Token για Route Protection
+
+### Προσθήκη στο auth.service.js
+```javascript
+const getTokenFrom = (req) => {
+  const authorization = req.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.replace('Bearer ', '')
+  }
+  return null
+}
+```
+
+### Ενημέρωση του user.controller.js
+```javascript
+exports.findAll = async (req,res) => {
+  const results = await User.find()
+
+  const token = authService.getTokenFrom(req)
+  const verificationResult = authService.verifyAccessToken(token)
+  if (!verificationResult.verified) {
+    return res.status(401).json({
+      status: false,
+      error: verificationResult.data
+    })
+  }
+  if (!verificationResult.data.roles.includes('admin')) {
+    return res.status(403).json({
+      status: false,
+      error: 'Forbidden'
+    })
+  }
+
+  res.json({
+    status: true,
+    data: results
+  })
+}
+```
+
+## Δοκιμή με Postman και Token
+GET στο `localhost:3000/api/users` με Header:
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+Λαμβάνουμε τη λίστα των χρηστών.
+
+## Google Login
+
+### Ρύθμιση στο Google Cloud Platform
+1. https://cloud.google.com/gcp -> console -> select project -> new project
+2. API and services -> credentials -> create credentials -> oauth client ID
+3. Configure consent screen -> create oauth client -> web app
+4. Auth redirect uri -> http://localhost:3000/api/auth/google/callback
+5. Δημιουργία clients
+
+### Προσθήκη στο .env
+```
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+REDIRECT_URI=http://localhost:3000/api/auth/google/callback
+```
+
+### Ενημέρωση του server.js
+```javascript
+app.use('/api/auth', authRoutes)
+```
+
+### Ενημέρωση του auth.routes.js
+```javascript
+router.get('/google/callback', authController.googleLogin)
+```
+
+### Ενημέρωση του auth.controller.js
+```javascript
+exports.googleLogin = async(req, res) => {
   const code = req.query.code
   if (!code) {
     res.status(400).json({status: false, data: "auth code is missing"})
   } else {
-    let user = await authService.googleAuth(code)
-    return res.redirect('http://localhost:5173') // Ανακατεύθυνση στο frontend μετά την επιτυχή αυθεντικοποίηση
+    let { user } = await authService.googleAuth(code)
+    return res.redirect('https://www.wikipedia.org') //προσορινα για λογους τεστινγκ
   }
 }
-4. Υλοποίηση του Google Auth Service
-Προσθέστε την ακόλουθη μέθοδο στο services/auth.service.js:
-javascriptconst { OAuth2Client } = require('google-auth-library')
+```
 
+### Ενημέρωση του auth.service.js
+```javascript
+const { OAuth2Client } = require('google-auth-library')
+[...]
 const googleAuth = async (code) => {
   console.log("Google login", code);
   const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -460,12 +565,15 @@ const googleAuth = async (code) => {
   try {
     // Exchange code for tokens
     const { tokens } = await oauth2Client.getToken(code)
+    console.log("Step 1", tokens)
     oauth2Client.setCredentials(tokens)
 
     const ticket = await oauth2Client.verifyIdToken({
       idToken: tokens.id_token,
       audience: CLIENT_ID
     });
+
+    console.log("Step 2")
 
     const userInfo = await ticket.getPayload();
     console.log("Google User", userInfo);
@@ -477,80 +585,267 @@ const googleAuth = async (code) => {
 }
 
 module.exports = {
-  // ...τα προηγούμενα exports...
+  generateAccessToken,
+  verifyPassword,
+  verifyAccessToken,
+  getTokenFrom,
   googleAuth
 }
-5. Google OAuth Authorization URL
-Για να αρχίσει η διαδικασία login με Google, ο χρήστης πρέπει να ανακατευθυνθεί σε ένα URL της Google. Το URL έχει τη μορφή:
-https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=email%20profile&access_type=offline
-Προχωρημένες λειτουργίες
-Μετά την ολοκλήρωση των βασικών λειτουργιών, μπορείτε να προσθέσετε προχωρημένες λειτουργίες για τη βελτίωση της εφαρμογής.
-Προτεινόμενες επεκτάσεις:
+```
 
-Middleware για έλεγχο πρόσβασης βάσει ρόλων:
+### Προσθήκη σχολίου με το Link στα routes
+```javascript
+// https://accounts.google.com/o/oauth2/auth?client_id={apo_to_google}&redirect_uri={apo_to_google}&response_type={apo_to_auth.service}&scope=email%20profile&access_type=offline
+```
 
-Διαχωρίστε τη λογική ελέγχου πρόσβασης από τους controllers σε middleware
+## Δημιουργία Logger
 
+### logger/logger.js
+```javascript
+const { createLogger, format, transports } = require('winston');
+require('winston-mongodb');
 
-Unit και Integration Tests:
+const logger = createLogger({
+  format: format.combine(
+    format.timestamp(),
+    format.simple()
+  ),
+  transports: [
+    new transports.Console(), // show logs in terminal
 
-Γράψτε Jest/Supertest tests για το API
+    new transports.File({      // save to file
+      filename: 'logs/all.log'
+    }),
 
+    new transports.MongoDB({   // save to MongoDB
+      db: process.env.MONGODB_URI || 'mongodb://localhost:27017/logsdb',
+      collection: 'logs',
+      level: 'info',  // logs info and above (warn, error)
+    })
+  ]
+});
 
-Admin Panel:
+module.exports = logger;
+```
 
-Δημιουργήστε ένα ελάχιστο admin panel για τη διαχείριση χρηστών
+### Ενημέρωση του server.js
+```javascript
+const url = require('url');
+const logger = require('./logger/logger.js');
+[...]
+app.use((req, res, next) => {
+  const pathname = url.parse(req.originalUrl).pathname;
+  logger.info(`${req.method} ${pathname}`);
+  next();
+});
+```
 
-
-Αποθήκευση Token στον Browser:
-
-Αποθηκεύστε το JWT token στο localStorage ή σε cookie για διατήρηση της συνεδρίας
-
-
-Προσθήκη σελίδων με React Router:
-
-Δημιουργήστε επιπλέον σελίδες για προφίλ χρήστη, διαχείριση λογαριασμού, κλπ.
-
-
-Swagger Documentation:
-
-Προσθέστε Swagger για την τεκμηρίωση του API
-
-
-
-Δοκιμή της εφαρμογής
-Χρησιμοποιώντας το Postman, μπορούμε να δοκιμάσουμε τα API endpoints μας για να βεβαιωθούμε ότι λειτουργούν σωστά.
-Δοκιμή του endpoint δημιουργίας χρήστη:
-
-Ξεκινήστε το server:
-bashnpm run dev
-
-Στο Postman, κάντε ένα POST request στο http://localhost:3000/api/users με JSON σώμα:
-json{
-  "username": "testuser",
-  "name": "Test User",
-  "roles": ["user"],
-  "email": "test@example.com",
-  "password": "testpassword"
+### Παραδείγματα Logging στους Controllers
+```javascript
+logger.error(`Login error: ${error.message}`);
+logger.warn(`Failed login attempt with username: ${req.body.username}`);
+logger.info(`User ${user.username} logged in successfully`);
+if (user && user.email) {
+  logger.info(`User ${user.email} logged in via Google`);
+} else {
+  logger.info('Google login succeeded, but user info is incomplete');
 }
+```
 
-Επαληθεύστε ότι λαμβάνετε μια απάντηση με status 201 και τα δεδομένα του νέου χρήστη.
+## Swagger Documentation
 
-Δοκιμή του endpoint login:
+### Εγκατάσταση
+```bash
+npm install swagger-jsdoc
+```
 
-Στο Postman, κάντε ένα POST request στο http://localhost:3000/api/login με JSON σώμα:
-json{
-  "username": "testuser",
-  "password": "testpassword"
+### swagger.js
+```javascript
+// Φόρτωση της βιβλιοθήκης που μετατρέπει Mongoose models σε Swagger schemas
+const m2s = require('mongoose-to-swagger');
+// Φόρτωση του Mongoose μοντέλου για τον χρήστη
+const User = require('./models/users.models');
+// Η βασική βιβλιοθήκη που δημιουργεί Swagger spec με βάση το configuration και τα JSDoc σχόλια
+const swaggerJsdoc = require('swagger-jsdoc');
+// Ορισμός ρυθμίσεων για τη Swagger τεκμηρίωση
+const options = {
+  definition: {
+    // Ορισμός της έκδοσης OpenAPI (Swagger) που θα χρησιμοποιηθεί
+    openapi: "3.1.0",
+    // Πληροφορίες για το API μας (τίτλος, περιγραφή, έκδοση)
+    info: {
+      version: "1.0.0",
+      title: "User and Auth API",
+      description: "Μια εφαρμογή για τη διαχείριση χρηστών και την αυθεντικοποίηση με JWT και Google login",
+    },
+    // Ορισμός των components, δηλαδή των reusable στοιχείων του Swagger όπως schemas και security definitions
+    components: {
+      schemas: {
+        // Εδώ δημιουργούμε το schema του χρήστη με βάση το Mongoose μοντέλο
+        User: m2s(User)
+      },
+      // Ρύθμιση του μηχανισμού αυθεντικοποίησης με Bearer token (JWT)
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",          // Είδος αυθεντικοποίησης
+          scheme: "bearer",      // Χρήση Bearer token
+          bearerFormat: "JWT"    // Προσδιορίζουμε ότι είναι JWT
+        }
+      }
+    },
+    // Εφαρμογή της ασφάλειας (bearerAuth) σε όλα τα endpoints, εκτός αν οριστεί αλλιώς σε κάποιο συγκεκριμένο
+    security: [
+      {
+        bearerAuth: []  // Δεν απαιτούνται scopes
+      }
+    ]
+  },
+  // 🔽 Το πιο σημαντικό σημείο: καθορίζουμε που βρίσκονται τα αρχεία που περιέχουν Swagger σχόλια (JSDoc)
+  // Εδώ βλέπει στους φακέλους routes και controllers για Swagger annotations
+  apis: ['./routes/*.js', './controllers/*.js'], // Μπορείς να προσθέσεις επιπλέον μονοπάτια αν χρειαστεί
+};
+// Δημιουργία του Swagger specification με βάση τις παραπάνω ρυθμίσεις
+const swaggerSpec = swaggerJsdoc(options);
+// Εξαγωγή του αντικειμένου ώστε να το φορτώσουμε από το server.js
+module.exports = swaggerSpec;
+```
+
+### Ενημέρωση του server.js
+```javascript
+const swaggerSpec = require('./swagger.js');
+const swaggerUI = require('swagger-ui-express')
+[...]
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+```
+
+### Swagger Annotations στους Controllers
+```javascript
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Get all users
+ *     description: Retrieve all users from the database (admin access required).
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       username:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       roles:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       id:
+ *                         type: string
+ *       401:
+ *         description: Unauthorized access (invalid or missing token)
+ *       403:
+ *         description: Forbidden access (non-admin role)
+ *       500:
+ *         description: Internal server error
+ *     tags:
+ *       - Users
+ */
+exports.findAll = async (req,res) => {
+```
+
+Έλεγχος Swagger στο http://localhost:3000/api-docs/#/
+
+## Middleware για Role-Based Access Control
+
+### middleware/verification.middleware.js
+```javascript
+// middleware/verification.middleware.js
+
+const authService = require('../services/auth.service');
+const logger = require('../logger/logger');
+
+/**
+ * Middleware to verify JWT token.
+ * Attaches decoded user data to `req.user` if valid.
+ */
+const verifyToken = (req, res, next) => {
+  const token = authService.getTokenFrom(req);
+  const verificationResult = authService.verifyAccessToken(token);
+
+  if (!verificationResult.verified) {
+    logger.warn(`Unauthorized access attempt with token: ${token}`);
+    return res.status(401).json({
+      status: false,
+      error: verificationResult.data
+    });
+  }
+
+  req.user = verificationResult.data;
+  next();
+};
+
+/**
+ * Middleware to check if user has required role.
+ * Call after verifyToken middleware.
+ */
+const checkRole = (requiredRole) => {
+  return (req, res, next) => {
+    const user = req.user;
+
+    if (!user || !user.roles.includes(requiredRole)) {
+      logger.warn(`Forbidden access by user: ${user?.username || 'unknown'}`);
+      return res.status(403).json({
+        status: false,
+        error: 'Forbidden'
+      });
+    }
+
+    next();
+  };
+};
+
+module.exports = {
+  verifyToken,
+  checkRole
+};
+```
+
+### Ενημέρωση του user.controller.js
+```javascript
+exports.findAll = async (req,res) => {
+  const results = await User.find()
+  res.json({
+    status: true,
+    data: results
+  })
 }
+```
 
-Επαληθεύστε ότι λαμβάνετε μια απάντηση με status 200 και ένα JWT token μαζί με βασικές πληροφορίες χρήστη.
+### Ενημέρωση του user.routes.js
+```javascript
+const { verifyToken, checkRole } = require('../middleware/verification.middleware');
+router.get ('/', verifyToken, checkRole('admin'), userController.findAll)
+```
 
-Δοκιμή του προστατευμένου endpoint:
+## Επόμενα Βήματα
 
-Κάντε ένα GET request στο http://localhost:3000/api/users
-Στην καρτέλα "Headers", προσθέστε ένα header με key "Authorization" και value "Bearer YOUR_TOKEN"
-Επαληθεύστε ότι λαμβάνετε μια απόκριση με status 200 και μια λίστα χρηστών εάν έχετε δικαιώματα admin
+1. Δημιουργία Jest/Supertest unit και integration tests για `/api/login` και `/api/users`
+2. Δημιουργία minimal admin panel για διαχείριση χρηστών (CRUD frontend για `/api/users`)
+3. Αποθήκευση του token στην προσωρινή μνήμη του browser
+4. Σύνδεση frontend με server
+5. Με router-dom επιπλέον σελίδα για users
 
 <!-- # Οδηγός δημιουργίας Full-Stack εφαρμογής Login με MERN Stack
 
