@@ -142,8 +142,12 @@ exports.googleLogin = async(req, res) => {
     logger.warn('Auth code is missing during Google login attempt');
     res.status(400).json({status: false, data: "auth code is missing"})
   } else {
-    let user = await authService.googleAuth(code)
-    logger.info('User logged in via Google');
+    let {user} = await authService.googleAuth(code)
+    if (user && user.email) {
+      logger.info(`User ${user.email} logged in via Google`);
+    } else {
+      logger.info('Google login succeeded, but user info is incomplete');
+    }
     return res.redirect('https://www.wikipedia.org')
   }
 }

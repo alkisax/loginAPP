@@ -1,5 +1,6 @@
 require('dotenv').config()
 require('express-async-errors')
+const url = require('url');
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
@@ -27,10 +28,11 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('error connecting to MongoDB:', error.message)
   })
 
-  app.use((req, res, next) => {
-    logger.info(`${req.method} ${req.url}`);
-    next();
-  });
+app.use((req, res, next) => {
+  const pathname = url.parse(req.originalUrl).pathname;
+  logger.info(`${req.method} ${pathname}`);
+  next();
+});
 
 app.use('/api/users', userRoutes)
 app.use('/api/login', authRoutes)
