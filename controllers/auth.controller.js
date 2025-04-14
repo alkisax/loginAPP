@@ -55,3 +55,13 @@ exports.login = async (req,res) => {
   }
 }
 
+exports.googleLogin = async(req, res) => {
+  const code = req.query.code
+  if (!code) {
+    res.status(400).json({status: false, data: "auth code is missing"})
+  } else {
+    let user = await authService.googleAuth(code)
+    return res.redirect('https://www.wikipedia.org')
+  }
+}
+
