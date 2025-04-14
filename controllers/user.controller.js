@@ -49,22 +49,22 @@ const logger = require('../logger/logger')
 exports.findAll = async (req,res) => {
   const results = await User.find()
 
-  const token = authService.getTokenFrom(req)
-  const verificationResult  = authService.verifyAccessToken(token)
-  if (!verificationResult.verified) {
-    logger.warn(`Unauthorized access attempt by token: ${token}`);
-    return res.status(401).json({
-      status: false,
-      error: verificationResult.data
-    })
-  }
-  if (!verificationResult.data.roles.includes('admin')) {
-    logger.warn(`Forbidden access attempt by user: ${verificationResult.data.username}`);
-    return res.status(403).json({
-      status: false,
-      error: 'Forbidden'
-    })
-  }
+  // const token = authService.getTokenFrom(req)
+  // const verificationResult  = authService.verifyAccessToken(token)
+  // if (!verificationResult.verified) {
+  //   logger.warn(`Unauthorized access attempt by token: ${token}`);
+  //   return res.status(401).json({
+  //     status: false,
+  //     error: verificationResult.data
+  //   })
+  // }
+  // if (!verificationResult.data.roles.includes('admin')) {
+  //   logger.warn(`Forbidden access attempt by user: ${verificationResult.data.username}`);
+  //   return res.status(403).json({
+  //     status: false,
+  //     error: 'Forbidden'
+  //   })
+  // }
 
   res.json({
     status: true,
