@@ -5,7 +5,7 @@ generateAccessToken = (user) => {
   const payload = {
     username: user.username,
     email: user.email,
-    rolles: user.roles,
+    roles: user.roles,
     id: user._id
   }
 
@@ -14,6 +14,7 @@ generateAccessToken = (user) => {
     expiresIn: '1h'
   }
   const token = jwt.sign(payload, secret, options)
+  return token
 }
 
 const verifyPassword = async (password, hashedPassword) => {
@@ -25,17 +26,28 @@ const verifyAccessToken = (token) => {
   try {
     const payload = jwt.verify(token, secret)
     return { 
-      cerified: true, data: payload
+      verified: true, data: payload
     }
   } catch (error) {
     return { 
-      cerified: false, data: error.message
+      verified: false, data: error.message
     }
   }
-} 
+}
+
+const getTokenFrom = (req) => {
+  const authorization = req.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    const token = authorization.replace('Bearer ', '')
+    console.log(token)
+    return token    
+  }
+  return null
+}
 
 module.exports = {
   generateAccessToken,
   verifyPassword,
-  verifyAccessToken
+  verifyAccessToken,
+  getTokenFrom
 }

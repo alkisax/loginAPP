@@ -1,12 +1,29 @@
 const bcrypt = require('bcrypt')
 const User = require('../models/users.models')
+const authService = require('../services/auth.service')
 
 exports.findAll = async (req,res) => {
- const results = await User.find()
- res.json({
-  status: true,
-  data: results
-})
+  const results = await User.find()
+
+  const token = authService.getTokenFrom(req)
+  const verificationResult  = authService.verifyAccessToken(token)
+  if (!verificationResult.verified) {
+    return res.status(401).json({
+      status: false,
+      error: verificationResult.data
+    })
+  }
+  if (!verificationResult.data.roles.includes('admin')) {
+    return res.status(403).json({
+      status: false,
+      error: 'Forbidden'
+    })
+  }
+
+  res.json({
+    status: true,
+    data: results
+  })
 }
 
 exports.create = async (req,res) => {
