@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt')
 const User = require('../models/users.models')
 const authService = require('../services/auth.service')
 const logger = require('../logger/logger')
+const userDAO = require('../daos/user.dao')
+const { toUserDTO } = require('../dtos/user.dto')
 
 /**
  * @swagger
@@ -47,7 +49,9 @@ const logger = require('../logger/logger')
  */
 
 exports.findAll = async (req,res) => {
-  const results = await User.find()
+  // const results = await User.find()
+
+  // transfer to middleware
 
   // const token = authService.getTokenFrom(req)
   // const verificationResult  = authService.verifyAccessToken(token)
@@ -66,10 +70,14 @@ exports.findAll = async (req,res) => {
   //   })
   // }
 
-  res.json({
-    status: true,
-    data: results
-  })
+  // transfer to dao
+  // res.json({
+  //   status: true,
+  //   data: results
+  // })
+
+  const users = await userDAO.findAllUsers();
+  res.json({ status: true, data: users });
 }
 /**
  * @swagger
@@ -141,14 +149,22 @@ exports.create = async (req,res) => {
   // na prostethei elegxos me if
 
   try {
-    const newUser = new User({
-      username: username,
-      name: name,
-      hashedPassword: hashedPassword,
-      email: email,
-      roles: roles
-    })
-    await newUser.save()
+    // const newUser = new User({
+    //   username: username,
+    //   name: name,
+    //   hashedPassword: hashedPassword,
+    //   email: email,
+    //   roles: roles
+    // })
+    // await newUser.save()
+    const newUser = await userDAO.createUser({
+      username,
+      name,
+      email,
+      roles,
+      hashedPassword
+    });
+
     logger.info(`Created new user: ${username}`);
     res.status(201).json(newUser)
   } catch(error) {
