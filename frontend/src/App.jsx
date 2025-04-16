@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import {
@@ -7,6 +8,7 @@ import {
 import LoginForm from './components/LoginForm'
 import UserLogedInView from './components/UserLogedInView'
 import AdminPanel from './components/AdminPanel'
+import ProtectedRoute from './services/ProtectedRoute'
 
 const url = 'http://localhost:3000/api'
 
@@ -19,10 +21,20 @@ const App = () => {
 
   const navigate = useNavigate()
   
+  // useEffect(() => {
+  //   axios.get(`${url}/message`)
+  //     .then(res => setMessage(res.data.message))
+  //     .catch(err => console.error(err));
+  // }, [])
+
   useEffect(() => {
-    axios.get(`${url}/message`)
-      .then(res => setMessage(res.data.message))
-      .catch(err => console.error(err));
+    const token = localStorage.getItem("token")
+    const roles = JSON.parse(localStorage.getItem("roles"))
+    if (token && roles) {
+      const userFromStorage = { token, roles }
+      setUser(userFromStorage) 
+      setUserIsAdmin(roles.includes("admin")) 
+    }
   }, [])
 
   const handleLogin = async (event) => {
@@ -36,7 +48,7 @@ const App = () => {
       })
       console.log("Login successful", response.data)
       const { token, user } = response.data.data
-      setUser(user.username)
+      setUser(user)
       localStorage.setItem("token", token)
       localStorage.setItem("roles", JSON.stringify(user.roles))
 
@@ -64,6 +76,12 @@ const App = () => {
     <div>
       <h6>{message}</h6>
       <h1>Login APP</h1>
+      {user && <button onClick={handleLogout}>log out</button>}
+      
+      {/* Universal Home Button */}
+      <Link to="/" className="home-btn">
+        <button>Home</button>
+      </Link>
 
       {/* Routes here handle sub-pages like /admin */}
       <Routes>
@@ -85,7 +103,14 @@ const App = () => {
             />}
           </>
         } /> 
-        <Route path="/admin" element={<AdminPanel />} />        
+        <Route path="/admin" element={
+          <>
+            <ProtectedRoute user={user} requiredRole="admin"></ProtectedRoute>
+            <AdminPanel
+              url={url}
+            />
+          </>
+        } />        
       </Routes>
     </div>
   )
