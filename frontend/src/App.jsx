@@ -10,6 +10,7 @@ const App = () => {
   const [message, setMessage] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [userIsAdmin, setUserIsAdmin] = useState(false)
   
   useEffect(() => {
     axios.get(`${url}/message`)
@@ -26,10 +27,15 @@ const App = () => {
         "username": username,
         "password": password
       })
-
       console.log("Login successful", response.data)
-      localStorage.setItem("token", response.data.data.token)
-      setUser(username)
+      const { token, user } = response.data.data
+      setUser(user.username)
+      localStorage.setItem("token", token)
+      localStorage.setItem("roles", JSON.stringify(user.roles))
+
+      const isAdmin = user.roles.includes("admin")
+      setUserIsAdmin(isAdmin)
+      console.log("Is admin?", isAdmin)
 
     } catch (error) {
       console.log(error)     
@@ -40,6 +46,10 @@ const App = () => {
     localStorage.removeItem("token")
     setUser(null)
     console.log("Logged out successfully")
+  }
+
+  const handleAdminBtn = () => {
+    console.log("Admin clicked")    
   }
 
   return (
@@ -57,6 +67,8 @@ const App = () => {
       {user !==  null && 
         <UserLogedInView 
           handleLogout={handleLogout}
+          userIsAdmin= {userIsAdmin}
+          handleAdminBtn={handleAdminBtn}
         />}
     </div>
   )
