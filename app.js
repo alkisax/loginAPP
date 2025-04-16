@@ -6,6 +6,7 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const userRoutes = require('./routes/user.routes.js')
 const authRoutes = require('./routes/auth.routes.js')
+const messageRoutes = require('./routes/message.routes.js')
 const { log } = require('winston')
 const logger = require('./logger/logger.js');
 const swaggerSpec = require('./swagger.js');
@@ -25,5 +26,6 @@ app.use((req, res, next) => {
 app.use('/api/users', userRoutes)
 app.use('/api/login', authRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/message',messageRoutes)
 
 module.exports = app
