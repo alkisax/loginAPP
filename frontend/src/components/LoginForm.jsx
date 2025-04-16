@@ -1,12 +1,6 @@
-import { useState } from "react"
-const LoginForm = () =>{
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  
-  const handleLogin = (event) => {
-    console.log(event)
 
-  }
+const LoginForm = ({ username, password, setUsername, setPassword, handleLogin }) =>{
+
 
   return (
     <>
@@ -29,6 +23,7 @@ const LoginForm = () =>{
           autoComplete="password"
           />
         </div>
+        <button type="submit">login</button>
       </form>
     </>
   )
