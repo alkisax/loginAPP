@@ -37,7 +37,7 @@ const AdminPanel = ({url}) => {
         {!loading && users.length !== 0 && 
           users.map((user) => {
             return (
-              <li key={user.id}>
+              <li key={user.id || `${user.username}-${user.email}`}>
                 {user.username} - {user.name} - {user.email} - {user.roles.join(", ")}
               </li>
             )

@@ -1,6 +1,7 @@
 // https://github.com/mkarampatsis/coding-factory7-nodejs/blob/main/usersApp/controllers/auth.controller.js
 // https://fullstackopen.com/en/part4/token_authentication
 const bcrypt = require ('bcrypt')
+const jwt = require('jsonwebtoken');
 const User = require('../models/users.models')
 const authService = require('../services/auth.service')
 const logger = require ('../logger/logger')
@@ -82,7 +83,7 @@ exports.login = async (req,res) => {
         message: "Password is required"
       });
     }
-    
+
     // Step 1: Find the user by username
     // const user = await User.findOne({username: req.body.username})
     const user = await userDAO.findUserByUsername(req.body.username);
@@ -160,14 +161,34 @@ exports.googleLogin = async(req, res) => {
   if (!code) {
     logger.warn('Auth code is missing during Google login attempt');
     res.status(400).json({status: false, data: "auth code is missing"})
-  } else {
-    let {user} = await authService.googleAuth(code)
-    if (user && user.email) {
-      logger.info(`User ${user.email} logged in via Google`);
-    } else {
-      logger.info('Google login succeeded, but user info is incomplete');
-    }
-    return res.redirect('https://www.wikipedia.org')
+  } 
+  const { user, tokens } = await authService.googleAuth(code);
+
+  if (!user || !user.email) {
+    logger.warn('Google login failed or incomplete');
+    return res.status(401).json({ status: false, data: "Google login failed" });
   }
+
+  // 🔐 Create token for your app (JWT etc.)
+  const dbUser = await User.findOneAndUpdate(
+    { email: user.email },
+    { $setOnInsert: { email: user.email, name: user.name, roles: ['user'] } },
+    { upsert: true, new: true }
+  );
+
+  const payload = { id: dbUser._id, roles: dbUser.roles };
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+  return res.redirect(`http://localhost:5173/google-success?token=${token}&email=${dbUser.email}`);
+  
+  // else {
+    // let {user} = await authService.googleAuth(code)
+    // if (user && user.email) {
+    //   logger.info(`User ${user.email} logged in via Google`);
+    // } else {
+    //   logger.info('Google login succeeded, but user info is incomplete');
+    // }
+    // return res.redirect('http://localhost:5173/')
+  // }
 }
 

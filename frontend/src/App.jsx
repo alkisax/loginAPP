@@ -5,6 +5,7 @@ import {
   BrowserRouter as Router,
   Routes, Route, Link, useNavigate
 } from 'react-router-dom'
+import GoogleSuccess from './components/GoogleSuccess'
 import LoginForm from './components/LoginForm'
 import UserLogedInView from './components/UserLogedInView'
 import AdminPanel from './components/AdminPanel'
@@ -77,7 +78,7 @@ const App = () => {
       <h6>{message}</h6>
       <h1>Login APP</h1>
       {user && <button onClick={handleLogout}>log out</button>}
-      
+
       {/* Universal Home Button */}
       <Link to="/" className="home-btn">
         <button>Home</button>
@@ -103,6 +104,7 @@ const App = () => {
             />}
           </>
         } /> 
+
         <Route path="/admin" element={
           <>
             <ProtectedRoute user={user} requiredRole="admin"></ProtectedRoute>
@@ -110,7 +112,11 @@ const App = () => {
               url={url}
             />
           </>
-        } />        
+        } />  
+
+        <Route path="/google-success" element={
+          <GoogleSuccess setUser={setUser} setUserIsAdmin={setUserIsAdmin} />
+        } />    
       </Routes>
     </div>
   )
