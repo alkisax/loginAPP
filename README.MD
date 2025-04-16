@@ -847,6 +847,1092 @@ router.get ('/', verifyToken, checkRole('admin'), userController.findAll)
 4. Σύνδεση frontend με server
 5. Με router-dom επιπλέον σελίδα για users
 
+# Οδηγός Ανάπτυξης Full Stack με Node.js και React
+
+## Διαχωρισμός Server από App
+
+### Αρχική Κατάσταση server.js
+
+```javascript
+require('dotenv').config()
+require('express-async-errors')
+const url = require('url');
+const express = require('express')
+const cors = require('cors')
+const mongoose = require('mongoose')
+const userRoutes = require('./routes/user.routes.js')
+const authRoutes = require('./routes/auth.routes.js')
+const { log } = require('winston')
+const logger = require('./logger/logger.js');
+const swaggerSpec = require('./swagger.js');
+const swaggerUI = require('swagger-ui-express')
+
+const app = express()
+app.use(cors())
+app.use(express.static('dist')) // να το δοκιμασω
+app.use(express.json());
+// Set up Swagger UI endpoint
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+mongoose.set('strictQuery', false)
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    // console.log('connected to MongoDB', process.env.MONGODB_URI)
+    console.log('connected to MongoDB')
+  })
+  .catch((error) => {
+    console.log('error connecting to MongoDB:', error.message)
+  })
+
+app.use((req, res, next) => {
+  const pathname = url.parse(req.originalUrl).pathname;
+  logger.info(${req.method} ${pathname});
+  next();
+});
+
+app.use('/api/users', userRoutes)
+app.use('/api/login', authRoutes)
+app.use('/api/auth', authRoutes)
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(Server running on port ${PORT});
+});
+
+module.exports = app
+```
+
+### Διαχωρισμός σε Δύο Αρχεία
+
+#### Νέο server.js
+```javascript
+require('dotenv').config();
+const mongoose = require('mongoose');
+const app = require('./app'); // import the Express app from app.js
+
+mongoose.set('strictQuery', false);
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('connected to MongoDB');
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('error connecting to MongoDB:', error.message);
+  });
+```
+
+#### Νέο app.js
+```javascript
+require('dotenv').config()
+require('express-async-errors')
+const url = require('url');
+const express = require('express')
+const cors = require('cors')
+const mongoose = require('mongoose')
+const userRoutes = require('./routes/user.routes.js')
+const authRoutes = require('./routes/auth.routes.js')
+const { log } = require('winston')
+const logger = require('./logger/logger.js');
+const swaggerSpec = require('./swagger.js');
+const swaggerUI = require('swagger-ui-express')
+
+const app = express()
+app.use(cors())
+app.use(express.static('dist')) // να το δοκιμασω
+app.use(express.json());
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec)); // Set up Swagger UI endpoint
+app.use((req, res, next) => {
+  const pathname = url.parse(req.originalUrl).pathname;
+  logger.info(`${req.method} ${pathname}`);
+  next();
+});
+
+app.use('/api/users', userRoutes)
+app.use('/api/login', authRoutes)
+app.use('/api/auth', authRoutes)
+
+module.exports = app
+```
+
+## Εγκατάσταση Jest/Supertest για Unit και Integration Tests
+
+### Εγκατάσταση απαραίτητων πακέτων
+```bash
+npm install --save-dev jest 
+npm install --save-dev supertest
+npm install --save-dev cross-env
+npm install --save-dev dotenv
+```
+
+### Προσθήκη ρυθμίσεων Jest στο package.json
+```json
+"jest": {
+  "collectCoverage":true,
+  "coveragePathIgnorePatterns": [
+    "/node_modules/",
+    "/logs"
+  ],
+  "setupFiles": [
+    "dotenv/config"
+  ]
+},
+"scripts": {
+  "test": "cross-env NODE_ENV=test jest --testTimeout=50000"
+}
+```
+
+### Δημιουργία .env αρχείου για test
+```
+MONGODB_TEST_URI = mongodb+srv://alkisax:{password}@cluster0.8ioq6.mongodb.net/loginAPP_TEST?retryWrites=true&w=majority&appName=Cluster0
+```
+
+### Δημιουργία Test για Login (__test__/login.test.js)
+```javascript
+const mongoose = require("mongoose");
+const request = require("supertest");
+const bcrypt = require("bcrypt");
+const app = require("../app");
+
+const User = require("../models/users.models");
+const authService = require("../services/auth.service");
+
+const TEST_USER = {
+  username: "testuser",
+  name: "Test User",
+  email: "testuser@example.com",
+  password: "testpassword",
+  roles: ["admin"]
+};
+
+beforeEach(async () => {
+  await mongoose.connect(process.env.MONGODB_TEST_URI);
+  await User.deleteMany({});
+
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(TEST_USER.password, saltRounds)
+
+  await User.create({
+    username: TEST_USER.username,
+    name: TEST_USER.name,
+    email: TEST_USER.email,
+    hashedPassword: hashedPassword,
+    roles: TEST_USER.roles
+  })
+})
+
+afterEach(async () => {
+  await mongoose.connection.close();
+})
+
+afterAll(async () => {
+  await mongoose.disconnect();
+})
+
+describe("POST /api/login", () => {
+  it("should return a valid token and user data when credentials are correct", async () => {
+    const res = await request(app)
+      .post("/api/login")
+      .send({
+        username: TEST_USER.username,
+        password: TEST_USER.password
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.status).toBe(true);
+    expect(res.body.data.token).toBeDefined();
+    expect(res.body.data.user).toMatchObject({
+      username: TEST_USER.username,
+      email: TEST_USER.email,
+      roles: TEST_USER.roles
+    });
+  });
+});
+```
+
+## Μετατροπή σε DTO DAO Pattern
+
+### Data Access Object (DAO)
+#### daos/user.dao.js
+```javascript
+const User = require('../models/users.models');
+
+const findAllUsers = async () => {
+  return await User.find();
+};
+
+const findUserByUsername = async (username) => {
+  return await User.findOne({ username });
+};
+
+const findUserByEmail = async (email) => {
+  return await User.findOne({ email });
+};
+
+const createUser = async (userData) => {
+  const user = new User(userData);
+  return await user.save();
+};
+
+module.exports = {
+  findAllUsers,
+  findUserByUsername,
+  findUserByEmail,
+  createUser
+};
+```
+
+### Αλλαγές στο user.controller.js
+```javascript
+const userDAO = require('../daos/user.dao')
+
+exports.findAll = async (req, res) => {
+  // transfer to dao
+  // res.json({
+  //   status: true,
+  //   data: results
+  // })
+  const users = await userDAO.findAllUsers();
+  res.json({ status: true, data: users });
+}
+
+exports.create = async (req, res) => {
+  // ...
+  // const newUser = new User({
+  //   username: username,
+  //   name: name,
+  //   hashedPassword: hashedPassword,
+  //   email: email,
+  //   roles: roles
+  // })
+  // await newUser.save()
+  const newUser = await userDAO.createUser({
+    username,
+    name,
+    email,
+    roles,
+    hashedPassword
+  });
+  // ...
+}
+```
+
+### Αλλαγές στο auth.controller.js
+```javascript
+const userDAO = require('../daos/user.dao')
+
+// const user = await User.findOne({username: req.body.username})
+const user = await userDAO.findUserByUsername(req.body.username);
+```
+
+### Data Transfer Object (DTO) - Ημιτελές
+#### dtos/user.dto.js
+```javascript
+const toUserDTO = (user) => {
+  return {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    name: user.name,
+    roles: user.roles,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt
+  };
+};
+
+module.exports = {
+  toUserDTO
+};
+```
+
+## Περισσότερα Tests
+
+### Βελτιώσεις στο auth.controller.js για Έλεγχο Κενών Πεδίων
+```javascript
+exports.login = async (req, res) => {
+  try {
+    const username = req.body.username
+    const password = req.body.password
+
+    if (!username) {
+      logger.warn("Login attempt missing username");
+      return res.status(400).json({
+        status: false,
+        message: "Username is required"
+      });
+    }
+    
+    if (!password) {
+      logger.warn("Login attempt missing password");
+      return res.status(400).json({
+        status: false,
+        message: "Password is required"
+      });
+    }
+    // ...
+```
+
+### Περισσότερα Test Cases για Login
+```javascript
+it("should fail with wrong password", async () => {
+  const res = await request(app)
+    .post("/api/login")
+    .send({
+      username: TEST_USER.username,
+      password: "wrongpassword"
+    });
+
+  expect(res.statusCode).toBe(401);
+  expect(res.body.status).toBe(false);
+  expect(res.body.message).toBe("Invalid username or password");
+});
+
+it("should fail with non-existent username", async () => {
+  const res = await request(app)
+    .post("/api/login")
+    .send({
+      username: "notARealUser",
+      password: "anyPassword"
+    });
+
+  expect(res.statusCode).toBe(401);
+  expect(res.body.status).toBe(false);
+  expect(res.body.message).toBe("Invalid username or password");
+});
+
+it("should fail when username is missing", async () => {
+  const res = await request(app)
+    .post("/api/login")
+    .send({
+      password: TEST_USER.password
+    });
+
+  expect(res.statusCode).toBe(400); // you may need to validate and return 400 for bad input
+  expect(res.body.status).toBe(false);
+});
+
+it("should fail when password is missing", async () => {
+  const res = await request(app)
+    .post("/api/login")
+    .send({
+      username: TEST_USER.username
+    });
+
+  expect(res.statusCode).toBe(400); // same here
+  expect(res.body.status).toBe(false);
+});
+```
+
+## Σύνδεση Frontend με Server
+
+### Δημιουργία Δοκιμαστικού API Endpoint για Message
+#### message.controller.js
+```javascript
+/**
+ * @swagger
+ * /api/message:
+ *   get:
+ *     summary: Get a welcome message from the server
+ *     description: Returns a simple "Hello from the server" message
+ *     responses:
+ *       200:
+ *         description: A welcome message
+ *       500:
+ *         description: Internal server error
+ *     tags:
+ *       - Message
+ */
+exports.message = (req, res) => {
+  try {
+    res.status(200).json({
+      status: true,
+      message: "Hello from the server!"
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      error: "Internal server error"
+    });
+  }
+}
+```
+
+#### message.routes.js
+```javascript
+const express = require('express')
+const router = express.Router()
+const messageController = require('../controllers/message.controller')
+
+router.get ('/', messageController.message)
+
+module.exports = router
+```
+
+#### Προσθήκη στο app.js
+```javascript
+const messageRoutes = require('./routes/message.routes.js')
+app.use('/api/message', messageRoutes)
+```
+
+### Ενσωμάτωση API στο React App
+#### app.jsx
+```javascript
+const [message, setMessage] = useState('')
+
+useEffect(() => {
+  axios.get('http://localhost:3000/api/message')
+    .then(res => setMessage(res.data.message))
+    .catch(err => console.error(err));
+}, [])
+
+return (
+  <div>
+    <h1>{message}</h1>
+    {/* ... */}
+  </div>
+)
+```
+
+### Υλοποίηση Login Form και Frontend Authentication
+#### app.jsx
+```javascript
+const url = 'http://localhost:3000/api'
+
+const [username, setUsername] = useState('')
+const [password, setPassword] = useState('')
+const [userIsAdmin, setUserIsAdmin] = useState(false)
+
+const handleLogin = async (event) => {
+  event.preventDefault()
+  console.log("Submitting login...")
+
+  try {
+    const response = await axios.post(`${url}/login`, {
+      "username": username,
+      "password": password
+    })
+    console.log("Login successful", response.data)
+    const { token, user } = response.data.data
+    setUser(user)
+    localStorage.setItem("token", token)
+    localStorage.setItem("roles", JSON.stringify(user.roles))
+
+    const isAdmin = user.roles.includes("admin")
+    setUserIsAdmin(isAdmin)
+    console.log("Is admin?", isAdmin)
+
+  } catch (error) {
+    console.log(error)     
+  }
+}
+
+// Στο return
+{user === null && 
+  <LoginForm 
+    username={username}
+    password={password}
+    setUsername={setUsername}
+    setPassword={setPassword}
+    handleLogin={handleLogin}
+  />}
+```
+
+### Υλοποίηση Logout
+#### userLogedInView.jsx
+```javascript
+const UserLogedInView = ({ handleLogout }) => {
+  return (
+    <>
+      <h1>Welcome user</h1>
+      <button onClick={handleLogout}>log out</button>
+    </>
+  )
+}
+export default UserLogedInView
+```
+
+#### app.jsx
+```javascript
+const handleLogout = async () => {
+  localStorage.removeItem("token")
+  setUser(null)
+  setUserIsAdmin(false)
+  console.log("Logged out successfully")
+}
+
+// Στο return
+{user !==  null && 
+  <UserLogedInView 
+    handleLogout={handleLogout}
+  />}
+```
+
+### Προσθήκη Admin Button στο UserLoggedInView
+```javascript
+// userLogedInView.jsx
+{userIsAdmin &&
+  <button onClick={handleAdminBtn}>admin panel</button> 
+}
+
+// app.jsx
+<UserLogedInView 
+  handleLogout={handleLogout}
+  userIsAdmin={userIsAdmin}
+  handleAdminBtn={handleAdminBtn}
+/>
+```
+
+## Δημιουργία Admin Panel
+
+### Δημιουργία Βασικού Admin Panel Component
+#### frontend/src/components/AdminPanel.jsx
+```javascript
+const AdminPanel = () => {
+  return (
+    <div>
+      <h2>Admin Panel</h2>
+      <p>Only admins can see this.</p>
+    </div>
+  )
+}
+
+export default AdminPanel
+```
+
+### Προσθήκη React Router
+#### main.jsx
+```javascript
+import { BrowserRouter as Router } from 'react-router-dom'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <Router>
+      <App />
+    </Router>
+  </StrictMode>,
+)
+```
+
+#### app.jsx
+```javascript
+import {
+  BrowserRouter as Router,
+  Routes, Route, Link, useNavigate
+} from 'react-router-dom'
+
+import AdminPanel from './components/AdminPanel'
+
+const navigate = useNavigate()
+
+const handleAdminBtn = () => {
+  navigate("/admin")   
+}
+
+return (
+  <div>
+    <h6>{message}</h6>
+    <h1>Login APP</h1>
+
+    {/* Routes here handle sub-pages like /admin */}
+    <Routes>
+      <Route path="/" element={
+        <>
+          {user === null && 
+          <LoginForm 
+            username={username}
+            password={password}
+            setUsername={setUsername}
+            setPassword={setPassword}
+            handleLogin={handleLogin}
+          />}
+          {user !==  null && 
+          <UserLogedInView 
+            handleLogout={handleLogout}
+            userIsAdmin={userIsAdmin}
+            handleAdminBtn={handleAdminBtn}
+          />}
+        </>
+      } /> 
+      <Route path="/admin" element={<AdminPanel />} />        
+    </Routes>
+  </div>
+)
+```
+
+### Περιορισμός Πρόσβασης στο Admin Panel Μόνο για Admins
+#### src/services/ProtectedRoute.js
+```javascript
+import { Navigate } from 'react-router-dom';
+
+const ProtectedRoute = ({ user, children, requiredRole }) => {
+  if (!user) {
+    return <Navigate to="/" />;
+  }
+
+  if (requiredRole && !user.roles.includes(requiredRole)) {
+    return <Navigate to="/" />;
+  }
+
+  return children;
+};
+
+export default ProtectedRoute;
+```
+
+#### Ενημέρωση στο App.jsx για το Admin Route
+```javascript
+<Route path="/admin" element={
+  <>
+    <ProtectedRoute user={user} requiredRole="admin"></ProtectedRoute>
+    <AdminPanel/>
+  </>
+} />
+```
+
+## Δημιουργία Χρήστη από το Admin Panel
+
+### Προσθήκη URL στο AdminPanel
+```javascript
+// App.jsx
+<Route path="/admin" element={
+  <>
+    <ProtectedRoute user={user} requiredRole="admin"></ProtectedRoute>
+    <AdminPanel
+      url={url}
+    />
+  </>
+} />
+```
+
+### Ενημέρωση του AdminPanel.jsx
+```javascript
+import NewUserForm from './NewUserForm'
+const AdminPanel = ({url}) => {
+  // ...
+  return (
+    <div>
+      {/* ... */}
+      <button onClick={() => setViewForm(!viewForm)}>create user form</button>
+      {viewForm && <NewUserForm url={url} />}
+      {/* ... */}
+    </div>
+  )
+}
+```
+
+### Δημιουργία NewUserForm.jsx
+```javascript
+import {useState} from 'react'
+import axios from 'axios'
+
+const NewUserForm = ({ url }) => {
+  const [username, setUsername] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [roles, setRoles] = useState(['user'])
+
+  const handleSubmitUser = async (event) => {
+    event.preventDefault()
+    
+    try {
+      const newUser = {
+        "username": username,
+        "name": name,
+        "email": email,
+        "password": password,
+        "roles": roles
+      }
+
+      const response = await axios.post(`${url}/users`, newUser)
+
+      console.log('✅ User created:', response.data)
+      alert('User created successfully!')
+
+      // Clear the form if needed
+      setUsername('')
+      setName('')
+      setEmail('')
+      setPassword('')
+      setRoles(['user'])
+
+    } catch (error) {
+      console.error('Error creating user:', error)
+    }
+  }
+
+  return (
+    <>
+      <form onSubmit={handleSubmitUser}>
+        <div>
+          username
+          <input type="text"
+          value={username}
+          name="username"
+          onChange={({target}) => setUsername(target.value)}
+          autoComplete="username"
+          />
+        </div>
+        <div>
+          name
+          <input type="text"
+          value={name}
+          name="name"
+          onChange={({target}) => setName(target.value)}
+          autoComplete="name"
+          />
+        </div>
+        <div>
+          email
+          <input type="email"
+          value={email}
+          name="email"
+          onChange={({target}) => setEmail(target.value)}
+          autoComplete="email"
+          />
+        </div>
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              value="admin"
+              checked={roles.includes('admin')}
+              onChange={({ target }) => {
+                if (target.checked) {
+                  setRoles([...roles, 'admin'])
+                } else {
+                  setRoles(roles.filter(r => r !== 'admin'))
+                }
+              }}
+            />
+            Admin
+          </label>
+        </div>      
+        <div>
+          password
+          <input type="text"
+          value={password}
+          name="password"
+          onChange={({target}) => setPassword(target.value)}
+          autoComplete="password"
+          />
+        </div>
+        <button type="submit">submit</button>
+      </form>
+    </>
+  )
+}
+export default NewUserForm
+```
+
+## Remember Login
+### Διατήρηση Κατάστασης Σύνδεσης με Local Storage
+```javascript
+// App.jsx
+useEffect(() => {
+  const token = localStorage.getItem("token")
+  const roles = JSON.parse(localStorage.getItem("roles"))
+  if (token && roles) {
+    const userFromStorage = { token, roles }
+    setUser(userFromStorage) 
+    setUserIsAdmin(roles.includes("admin")) 
+  }
+}, [])
+```
+
+## UI Improvements
+### Προσθήκη Universal Logout Button
+```javascript
+// App.jsx
+<h1>Login APP</h1>
+{user && <button onClick={handleLogout}>log out</button>}
+```
+
+### Προσθήκη Home Button
+```javascript
+{/* Universal Home Button */}
+<Link to="/" className="home-btn">
+  <button>Home</button>
+</Link>
+```
+
+## Προβολή Χρηστών στο Admin Panel
+### AdminPanel.jsx - Προσθήκη Λειτουργικότητας Προβολής Χρηστών
+```javascript
+import { useState, useEffect } from "react"
+import axios from 'axios'
+
+const AdminPanel = ({ url }) => {
+  const [users, setUsers] = useState([]); 
+  const [loading, setLoading] = useState(true);
+  const [viewForm, setViewForm] = useState(false);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("token"); 
+        const response = await axios.get(`${url}/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        });
+        setUsers(response.data.data); 
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setLoading(false); 
+      }
+    };
+
+    fetchUsers();
+  }, [url]);
+
+  return (
+    <div>
+      <h2>Admin Panel</h2>
+      <p>Only admins can see this.</p>
+      {loading && <p>Loading...</p>}
+      {!loading && users.length === 0 && <p>No users found</p>}
+      <ul>
+        {!loading && users.length !== 0 && 
+          users.map((user) => {
+            return (
+              <li key={user.id}>
+                {user.username} - {user.name} - {user.email} - {user.roles.join(", ")}
+              </li>
+            )
+          })
+        } 
+      </ul>
+      {/* ... */}
+    </div>
+  )
+}
+```
+
+## Google Login Integration
+
+### Διόρθωση Προβλημάτων στο Backend
+#### Διόρθωση Διπλών Routes στο app.js
+```javascript
+app.use('/api/users', userRoutes)
+app.use('/api/login', authRoutes)
+// app.use('/api/auth', authRoutes) // Αφαιρέθηκε το διπλό route
+app.use('/api/message', messageRoutes)
+```
+
+#### Ενημέρωση URL στο auth.routes.js
+```javascript
+// https://accounts.google.com/o/oauth2/auth?client_id=37391548646-a2tj5o8cnvula4l29p8lodkmvu44sirh.apps.googleusercontent.com&redirect_uri=http://localhost:3000/api/login/google/callback&response_type=code&scope=email%20profile&access_type=offline
+```
+
+#### Ρύθμιση Google OAuth Origins και Redirects
+```
+Authorized JavaScript origins
+http://localhost:3000
+http://localhost:5173
+
+Authorized redirect URIs
+http://localhost:3000/api/login/google/callback
+http://localhost:5173/
+```
+
+#### Διόρθωση auth.controller.js για το Google Login
+```javascript
+const jwt = require('jsonwebtoken');
+
+exports.googleLogin = async(req, res) => {
+  const code = req.query.code
+  if (!code) {
+    logger.warn('Auth code is missing during Google login attempt');
+    res.status(400).json({status: false, data: "auth code is missing"})
+  } 
+  const { user, tokens } = await authService.googleAuth(code);
+
+  if (!user || !user.email) {
+    logger.warn('Google login failed or incomplete');
+    return res.status(401).json({ status: false, data: "Google login failed" });
+  }
+
+  // 🔐 Create token for your app (JWT etc.)
+  const dbUser = await User.findOneAndUpdate(
+    { email: user.email },
+    { $setOnInsert: { email: user.email, name: user.name, roles: ['user'] } },
+    { upsert: true, new: true }
+  );
+
+  const payload = { id: dbUser._id, roles: dbUser.roles };
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+  return res.redirect(`http://localhost:5173/google-success?token=${token}&email=${dbUser.email}`);
+}
+```
+
+### Προσθήκη Google Success Component στο Frontend
+#### App.jsx
+```javascript
+import GoogleSuccess from './components/GoogleSuccess'
+
+// ...
+<Route path="/google-success" element={
+  <GoogleSuccess setUser={setUser} setUserIsAdmin={setUserIsAdmin} />
+} />
+```
+
+#### components/GoogleSuccess.jsx
+```javascript
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const GoogleSuccess = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const email = params.get('email');
+
+    if (token) {
+      // Store the token (adjust storage if you prefer memory/Redux/etc.)
+      localStorage.setItem('token', token);
+      localStorage.setItem('email', email);
+
+      // Redirect to dashboard or homepage
+      navigate('/');
+    } else {
+      // Maybe show error
+      navigate('/login');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return <div>Logging you in via Google...</div>;
+};
+
+export default GoogleSuccess;
+```
+
+### Προσθήκη Google Login Button στο LoginForm
+```javascript
+// LoginForm.jsx
+const googleUrl = 'https://accounts.google.com/o/oauth2/auth?client_id=37391548646-a2tj5o8cnvula4l29p8lodkmvu44sirh.apps.googleusercontent.com&redirect_uri=http://localhost:3000/api/login/google/callback&response_type=code&scope=email%20profile&access_type=offline'
+
+// Στο return
+<a href={googleUrl}>
+  <button type="button">Login with Google</button>
+</a>
+```
+
+### Ενσωμάτωση Google OAuth Library
+```bash
+npm install @react-oauth/google
+```
+
+#### main.jsx
+```javascript
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter as Router } from 'react-router-dom'
+import { GoogleOAuthProvider } from '@react-oauth/google'
+import App from './App.jsx'
+
+const googleClientId = '37391548646-a2tj5o8cnvula4l29p8lodkmvu44sirh.apps.googleusercontent.com'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <Router>
+    <GoogleOAuthProvider clientId={googleClientId}> 
+      <App />
+      </GoogleOAuthProvider>
+    </Router>
+  </StrictMode>,
+)
+```
+
+#### App.jsx
+```javascript
+const handleGoogleLogin = (response) => {
+  console.log("Google login response:", response);
+  // Send the Google token to your backend for verification
+  axios.post(`${url}/login/google/callback`, {
+    code: response.code
+  }).then(res => {
+    // Handle successful Google login (set user, token, etc.)
+    console.log("Google login successful", res.data);
+  }).catch(err => {
+    console.log("Google login error", err);
+  });
+};
+
+// Στο Route element
+<LoginForm 
+  username={username}
+  password={password}
+  setUsername={setUsername}
+  setPassword={setPassword}
+  handleLogin={handleLogin}
+  handleGoogleLogin={handleGoogleLogin}
+/>
+```
+
+#### LoginForm.jsx
+```javascript
+import { GoogleLogin } from '@react-oauth/google';
+
+const LoginForm = ({ username, password, setUsername, setPassword, handleLogin, handleGoogleLogin }) => {
+  // ...
+  return (
+    <>
+      {/* ... */}
+      <GoogleLogin
+        onSuccess={handleGoogleLogin}
+        onError={(error) => console.log("Google Login Error:", error)}
+      />
+      {/* ... */}
+    </>
+  )
+}
+```
+
+## User Detail Page
+
+### components/UserDetail.jsx
+```javascript
+import { useParams } from 'react-router-dom';
+
+const UserDetail = () => {
+  const { id } = useParams();  // Access the id from the route parameter
+  
+  return (
+    <div>
+      <h4>User Detail for ID: {id}</h4>
+      {/* Fetch and display user details here */}
+    </div>
+  );
+};
+
+export default UserDetail;
+```
+
+### AdminPanel.jsx
+```javascript
+              <li key={user._id || `${user.username}-${user.email}`}>
+                 <Link to={`/users/${user._id}`}>
+                  {user.username}
+                 </Link>
+                 - {user.name} - {user.email} - {user.roles.join(", ")}
+              </li>
+```
+### App.jsx
+```javascript
+          <Route path="/users" element={<AdminPanel url={url} />} />
+          <Route path="/users/:id" element={<UserDetail />} />
+```
+## Delete user
+## cypress tests
 
 
 <!-- # Οδηγός δημιουργίας Full-Stack εφαρμογής Login με MERN Stack
