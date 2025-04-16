@@ -139,7 +139,7 @@ exports.login = async (req,res) => {
  * /api/login/google/callback:
  *   get:
  *     summary: Google Login Callback
- *     description: Callback endpoint for Google login after receiving the authorization code.
+ *     description: Callback endpoint after Google redirects with an authorization code.
  *     parameters:
  *       - in: query
  *         name: code
@@ -148,10 +148,10 @@ exports.login = async (req,res) => {
  *           type: string
  *         description: The Google OAuth authorization code
  *     responses:
- *       200:
- *         description: User logged in successfully via Google
+ *       302:
+ *         description: Redirect to frontend with token
  *       400:
- *         description: Missing authorization code
+ *         description: Missing or invalid authorization code
  *     tags:
  *       - Authentication
  */

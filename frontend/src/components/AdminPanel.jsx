@@ -1,4 +1,5 @@
 import { useState, useEffect  } from "react"
+import { Link } from 'react-router-dom'
 import axios from 'axios'
 import NewUserForm from './NewUserForm'
 
@@ -37,8 +38,11 @@ const AdminPanel = ({url}) => {
         {!loading && users.length !== 0 && 
           users.map((user) => {
             return (
-              <li key={user.id || `${user.username}-${user.email}`}>
-                {user.username} - {user.name} - {user.email} - {user.roles.join(", ")}
+              <li key={user._id || `${user.username}-${user.email}`}>
+                 <Link to={`/users/${user._id}`}>
+                  {user.username}
+                 </Link>
+                 - {user.name} - {user.email} - {user.roles.join(", ")}
               </li>
             )
           })

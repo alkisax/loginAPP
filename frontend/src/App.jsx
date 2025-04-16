@@ -10,6 +10,7 @@ import LoginForm from './components/LoginForm'
 import UserLogedInView from './components/UserLogedInView'
 import AdminPanel from './components/AdminPanel'
 import ProtectedRoute from './services/ProtectedRoute'
+import UserDetail from './components/UserDetail'
 
 const url = 'http://localhost:3000/api'
 
@@ -116,7 +117,10 @@ const App = () => {
 
         <Route path="/google-success" element={
           <GoogleSuccess setUser={setUser} setUserIsAdmin={setUserIsAdmin} />
-        } />    
+        } />
+
+          <Route path="/users" element={<AdminPanel url={url} />} />
+          <Route path="/users/:id" element={<UserDetail />} />
       </Routes>
     </div>
   )
