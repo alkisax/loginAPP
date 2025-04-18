@@ -2136,6 +2136,140 @@ describe('GET /api/message', () => {
 ```
 
 ## Delete user
+## user.dao.js (θα το χρειαστώ σε λίγο) προσθέτω
+```javascript
+const deleteUserById = async (userId) => {
+  return await User.findByIdAndDelete(userId)
+}
+
+module.exports = {
+  findAllUsers,
+  findUserByUsername,
+  findUserByEmail,
+  createUser,
+  deleteUserById
+};
+```
+
+## user.controller.js προσθέτω
+```javascript
+exports.deleteById = async (req, res) => {
+  const userId = req.params.id
+  if (!userId){
+    return res.status(400).json({
+      status: false,
+      error: 'User ID is required OR not found'
+    })
+  }
+  try {
+    const deleteUser = await userDAO.deleteUserById(userId) // to be added to user.dao.js
+    if (!deleteUser){
+      return res.status(404).json({
+        status: false,
+        error: 'Error deleting user: not found'
+      })
+    } else {
+      res.status(200).json({
+        status: true,
+        message: `User ${deleteUser.username} deleted successfully`,
+      })
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      error: error.message
+    })
+  }
+}
+```
+### πρέπει να του βάλω απο πάνω και @swagger
+```javascript
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Admin only. Deletes a user by ID.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User deleted
+ *       400:
+ *         description: Missing or invalid ID
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+```
+
+## user.routes.js
+```javascript
+router.delete('/:id', verifyToken, checkRole('admin'), userController.deleteById)
+```
+### δοκιμή με postman ok
+## προσθήκη jest test στο users.test.js
+```javascript
+  it('creates a user and then deletes it', async () => {
+    const newUser = {
+      username: 'deleteme',
+      name: 'deleteme',
+      email: 'deleteme@example.com',
+      password: '123',
+      roles: ['user']
+    };
+
+    // First, create a user with this username
+    const toBeDeletedUser = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newUser)
+      .expect(201)
+
+    // try to retrive user id
+    const userId = toBeDeletedUser.body._id
+    expect(userId).toBeDefined()
+
+    await request(app)
+      .delete(`/api/users/${userId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+  });
+  it('delete with no id expext 404', async () => {
+    await request(app)
+    .delete(`/api/users/`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(404)
+  })
+  it('delete with invalid id expect 404', async () => {
+    const justAWrongId = '60c72b2f9b1e8b1a8b2a3c4d' //invalid id but valid mongo format
+    await request(app)
+    .delete(`/api/users/${justAWrongId}`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(404)
+  })
+  it('delete with invalid id expect 500', async () => {
+    const justAWrongId = 'invalid id format' //invalid id and invalid mongo format
+    await request(app)
+    .delete(`/api/users/${justAWrongId}`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(500)
+  })
+```
+
 ## cypress tests
 
 
