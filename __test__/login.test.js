@@ -6,7 +6,7 @@ const app = require("../app");
 const User = require("../models/users.models");
 const authService = require("../services/auth.service");
 
-const TEST_USER = {
+const TEST_USER_LOGIN = {
   username: "testuser",
   name: "Test User",
   email: "testuser@example.com",
@@ -19,22 +19,27 @@ beforeEach(async () => {
   await User.deleteMany({});
 
   const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(TEST_USER.password, saltRounds)
+  const hashedPassword = await bcrypt.hash(TEST_USER_LOGIN.password, saltRounds)
 
   await User.create({
-    username: TEST_USER.username,
-    name: TEST_USER.name,
-    email: TEST_USER.email,
+    username: TEST_USER_LOGIN.username,
+    name: TEST_USER_LOGIN.name,
+    email: TEST_USER_LOGIN.email,
     hashedPassword: hashedPassword,
-    roles: TEST_USER.roles
+    roles: TEST_USER_LOGIN.roles
   })
 })
 
-afterEach(async () => {
-  await mongoose.connection.close();
-})
+// beforeEach(async () => {
+//   await User.deleteMany({});
+// });
+// afterEach(async () => {
+//   await mongoose.connection.close();
+// })
 
 afterAll(async () => {
+  await User.deleteMany({})
+  // token = null
   await mongoose.disconnect();
 })
 
@@ -43,17 +48,17 @@ describe("POST /api/login", () => {
     const res = await request(app)
       .post("/api/login")
       .send({
-        username: TEST_USER.username,
-        password: TEST_USER.password
+        username: TEST_USER_LOGIN.username,
+        password: TEST_USER_LOGIN.password
       });
 
     expect(res.statusCode).toBe(200);
     expect(res.body.status).toBe(true);
     expect(res.body.data.token).toBeDefined();
     expect(res.body.data.user).toMatchObject({
-      username: TEST_USER.username,
-      email: TEST_USER.email,
-      roles: TEST_USER.roles
+      username: TEST_USER_LOGIN.username,
+      email: TEST_USER_LOGIN.email,
+      roles: TEST_USER_LOGIN.roles
     });
   });
 
@@ -61,7 +66,7 @@ describe("POST /api/login", () => {
     const res = await request(app)
       .post("/api/login")
       .send({
-        username: TEST_USER.username,
+        username: TEST_USER_LOGIN.username,
         password: "wrongpassword"
       });
 
@@ -87,10 +92,10 @@ describe("POST /api/login", () => {
     const res = await request(app)
       .post("/api/login")
       .send({
-        password: TEST_USER.password
+        password: TEST_USER_LOGIN.password
       });
 
-    expect(res.statusCode).toBe(400); // you may need to validate and return 400 for bad input
+    expect(res.statusCode).toBe(400); 
     expect(res.body.status).toBe(false);
   });
 
@@ -98,10 +103,10 @@ describe("POST /api/login", () => {
     const res = await request(app)
       .post("/api/login")
       .send({
-        username: TEST_USER.username
+        username: TEST_USER_LOGIN.username
       });
 
-    expect(res.statusCode).toBe(400); // same here
+    expect(res.statusCode).toBe(400); 
     expect(res.body.status).toBe(false);
   });
 });

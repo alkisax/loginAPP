@@ -49,35 +49,21 @@ const { toUserDTO } = require('../dtos/user.dto')
  */
 
 exports.findAll = async (req,res) => {
-  // const results = await User.find()
+  try {
 
-  // transfer to middleware
+    if (!req.headers.authorization) {
+      return res.status(401).json({ status: false, error: 'No token provided' });
+    }
 
-  // const token = authService.getTokenFrom(req)
-  // const verificationResult  = authService.verifyAccessToken(token)
-  // if (!verificationResult.verified) {
-  //   logger.warn(`Unauthorized access attempt by token: ${token}`);
-  //   return res.status(401).json({
-  //     status: false,
-  //     error: verificationResult.data
-  //   })
-  // }
-  // if (!verificationResult.data.roles.includes('admin')) {
-  //   logger.warn(`Forbidden access attempt by user: ${verificationResult.data.username}`);
-  //   return res.status(403).json({
-  //     status: false,
-  //     error: 'Forbidden'
-  //   })
-  // }
+    const users = await userDAO.findAllUsers();
+    res.status(200).json({ status: true, data: users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: false, error: 'Internal server error' });
+  }
 
-  // transfer to dao
-  // res.json({
-  //   status: true,
-  //   data: results
-  // })
-
-  const users = await userDAO.findAllUsers();
-  res.json({ status: true, data: users });
+  // const users = await userDAO.findAllUsers();
+  // res.json({ status: true, data: users });
 }
 /**
  * @swagger
@@ -146,17 +132,8 @@ exports.create = async (req,res) => {
   const SaltOrRounds = 10
   const hashedPassword = await bcrypt.hash(password, SaltOrRounds)
 
-  // na prostethei elegxos me if
-
   try {
-    // const newUser = new User({
-    //   username: username,
-    //   name: name,
-    //   hashedPassword: hashedPassword,
-    //   email: email,
-    //   roles: roles
-    // })
-    // await newUser.save()
+
     const newUser = await userDAO.createUser({
       username,
       name,

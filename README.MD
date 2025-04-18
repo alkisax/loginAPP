@@ -1931,6 +1931,210 @@ export default UserDetail;
           <Route path="/users" element={<AdminPanel url={url} />} />
           <Route path="/users/:id" element={<UserDetail />} />
 ```
+
+# επιπλέων user test με jest στο backend που ήταν εκρεμμότητα
+## αρχικα πρέπει να κάνω αλλαγές στο user.controler.js Aρχικά ήταν:
+```javascript
+exports.findAll = async (req,res) => {
+  const users = await userDAO.findAllUsers();
+  res.json({ status: true, data: users });
+}
+```
+
+### που είναι οκ αλλα χρειάζομαι να αλλάξει για να κανω τεστ για αποτυχία, και γίνετε 
+```javascript
+exports.findAll = async (req,res) => {
+  try {
+
+    if (!req.headers.authorization) {
+      return res.status(401).json({ status: false, error: 'No token provided' });
+    }
+
+    const users = await userDAO.findAllUsers();
+    res.status(200).json({ status: true, data: users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: false, error: 'Internal server error' });
+  }
+
+  // const users = await userDAO.findAllUsers();
+  // res.json({ status: true, data: users });
+}
+```
+
+## δημιουργώ το users.test.js
+
+```javascript
+const mongoose = require("mongoose");
+const request = require("supertest");
+const bcrypt = require("bcrypt");
+const app = require("../app");
+const jwt = require('jsonwebtoken');
+require('dotenv').config()
+const User = require("../models/users.models");
+const userDAO = require("../daos/user.dao");
+
+const authService = require('../services/auth.service')
+const loginRouter = require('../routes/auth.routes')
+
+const TEST_USER_ADMIN = {
+  username: "testuser",
+  name: "Test User",
+  email: "testuser@example.com",
+  password: "testpassword",
+  roles: ["admin"]
+};
+
+let token;
+
+beforeAll(async () => {
+
+  const saltrounds = 10
+  const hashedPassword = await bcrypt.hash(TEST_USER_ADMIN.password, saltrounds);
+
+  await mongoose.connect(process.env.MONGODB_TEST_URI);
+  console.log("Connection to MongoDB established for Jest")
+
+  await User.deleteMany({})
+
+  await User.create({
+    username: TEST_USER_ADMIN.username,
+    name: TEST_USER_ADMIN.name,
+    email: TEST_USER_ADMIN.email,
+    hashedPassword: hashedPassword,
+    roles: TEST_USER_ADMIN.roles
+  })
+
+  const res = await request(app)
+  .post("/api/login")
+  .send({
+    username: TEST_USER_ADMIN.username,
+    password: TEST_USER_ADMIN.password
+  });
+  token = res.body.data.token
+  console.log("token:", token)
+})
+
+afterAll(async () => {
+  await User.deleteMany({})
+  await mongoose.connection.close();
+});
+
+describe('GET /api/users', () => {
+  it('should return 200 and a list of users when authorized and is admin', async () => {
+    const res = await request(app)
+      .get('/api/users')
+      .set('Authorization', `Bearer ${token}`);  // Pass the token
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe(true);
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBeGreaterThan(0);
+  });
+
+  it('should return 400 when no token', async () => {
+    const res = await request(app)
+      .get('/api/users')
+
+    expect(res.status).toBe(401);
+    expect(res.body.status).toBe(false);
+  })
+
+  it('should return 403 when a non-admin user tries to access the users list', async () => {
+    // Simulate a non-admin user login
+    const nonAdminToken = 'some-fake-token-for-non-admin';
+
+    const res = await request(app)
+      .get('/api/users')
+      .set('Authorization', `Bearer ${nonAdminToken}`);
+
+    expect(res.status).toBe(401);
+    expect(res.body.status).toBe(false);
+  });
+})
+
+describe('POST /api/users', () => {
+  it('should return 201 and the created user when valid data is provided', async () => {
+    const newUser = {
+      username: 'newuser',
+      name: 'New User',
+      email: 'newuser@example.com',
+      password: 'password123',
+      roles: ['user']
+    };
+
+    const res = await request(app)
+      .post('/api/users')
+      .send(newUser);
+
+    expect(res.status).toBe(201);
+    expect(res.body.username).toBe(newUser.username);
+    expect(res.body.name).toBe(newUser.name);
+    expect(res.body.email).toBe(newUser.email);
+    expect(res.body.roles).toEqual(newUser.roles);
+  });
+
+  it('should return 400 when required fields are missing', async () => {
+    const newUser = {
+      username: 'newuser',
+      // Missing name, email, password, roles
+    };
+
+    const res = await request(app)
+      .post('/api/users')
+      .send(newUser);
+
+    expect(res.status).toBe(500);
+  });
+
+  it('should return 400 when username already exists', async () => {
+    const newUser = {
+      username: 'existinguser',
+      name: 'Existing User',
+      email: 'existinguser@example.com',
+      password: 'password123',
+      roles: ['user']
+    };
+
+    // First, create a user with this username
+    await request(app)
+      .post('/api/users')
+      .send(newUser);
+
+    // Try to create the user again
+    const res = await request(app)
+      .post('/api/users')
+      .send(newUser);
+
+    expect(res.status).toBe(400);
+  });
+});
+```
+
+## φτιαχνω ακόμα τεστ για το message.tes.js
+```javascript
+const request = require('supertest');
+const app = require('../app'); // Your Express app
+
+describe('GET /api/message', () => {
+  it('should return 200 and a welcome message', async () => {
+    const res = await request(app).get('/api/message');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      status: true,
+      message: "Hello from the server!!"
+    });
+  });
+});
+```
+
+## Αλλαγή στο package.json
+### επηδή τα τα τεστ το καθένα μονο του πέρναγε κανονικά αλλά ολα μαζί κάνανε κονφλικτ προσθεσα το **--runΙnBand** στο σκριπτ ωστε να τρέχουν ένα ένα
+```javascript
+    "test": "cross-env NODE_ENV=test jest --testTimeout=50000  --runInBand"
+```
+
 ## Delete user
 ## cypress tests
 
