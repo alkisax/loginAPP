@@ -20,6 +20,7 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [userIsAdmin, setUserIsAdmin] = useState(false)
+  const [users, setUsers] = useState([])
 
   const navigate = useNavigate()
   
@@ -87,13 +88,17 @@ const App = () => {
           Authorization: `Bearer ${token}`
         }
       });
+
       setTimeout(() => {
         setMessage("User is deleted");
       }, 7000);
       console.log("User deleted", response.data);
       alert('User deleted successfully!')
+
       // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
-      window.location.reload()
+      // window.location.reload()
+      setUsers(users.filter(user => user.id !== userId)); // αυτο προστεθηκε γιατι δεν πρεπει να κανεις ανανεωση της σελιδας σε single page app
+
     } catch (error) {
       console.error("Failed to delete user", error.response?.data || error.message);
     }
@@ -137,6 +142,8 @@ const App = () => {
             <AdminPanel
               url={url}
               handleDeleteUser={handleDeleteUser}
+              users={users}
+              setUsers={setUsers}
             />
           </>
         } />  

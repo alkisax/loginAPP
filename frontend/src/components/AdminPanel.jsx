@@ -1,11 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect  } from "react"
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import NewUserForm from './NewUserForm'
 
-const AdminPanel = ({url, handleDeleteUser}) => {
+const AdminPanel = ({url, handleDeleteUser, users, setUsers}) => {
   const [viewForm, setViewForm] = useState(false)
-  const [users, setUsers] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ const AdminPanel = ({url, handleDeleteUser}) => {
       </ul>
 
       <button id="createUserBtn" onClick={() => setViewForm(!viewForm)}>create user form</button>
-      {viewForm && <NewUserForm url={url} />}
+      {viewForm && <NewUserForm users={users} setUsers={setUsers} url={url} />}
 
     </div>
   )

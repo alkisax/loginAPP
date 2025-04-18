@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import axios from 'axios'
 
-const NewUserForm = ({ url }) =>{
+const NewUserForm = ({ url, users, setUsers }) =>{
   const [username, setUsername] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -36,7 +36,9 @@ const NewUserForm = ({ url }) =>{
       // Redirect to /admin after creating the user
       // navigate('/admin');
       // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
-      window.location.reload()
+      // window.location.reload()
+      // Update users list directly
+      setUsers([...users, response.data]); // αυτο προστεθηκε γιατι δεν πρεπει να κανεις ανανεωση της σελιδας σε single page app
 
     } catch (error) {
       console.error('Error creating user:', error)
