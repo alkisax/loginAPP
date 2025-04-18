@@ -126,6 +126,7 @@ const App = () => {
               setUsername={setUsername}
               setPassword={setPassword}
               handleLogin={handleLogin}
+              url={url}
             />}
             {user !==  null && 
             <UserLogedInView 
