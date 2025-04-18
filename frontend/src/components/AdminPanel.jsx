@@ -43,14 +43,14 @@ const AdminPanel = ({url, handleDeleteUser}) => {
                   {user.username}
                  </Link>
                  - {user.name} - {user.email} - {user.roles.join(", ")}
-                 <button onClick={() => handleDeleteUser(user._id)}>Delete</button>
+                 <button id={`${user.username}Btn`} onClick={() => handleDeleteUser(user._id)}>Delete</button>
               </li>
             )
           })
         } 
       </ul>
 
-      <button onClick={() => setViewForm(!viewForm)}>create user form</button>
+      <button id="createUserBtn" onClick={() => setViewForm(!viewForm)}>create user form</button>
       {viewForm && <NewUserForm url={url} />}
 
     </div>

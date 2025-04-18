@@ -9,6 +9,7 @@ const LoginForm = ({ username, password, setUsername, setPassword, handleLogin }
         <div>
           username
           <input type="text"
+          id="username"
           value={username}
           name="username"
           onChange={({target}) => setUsername(target.value)}
@@ -18,17 +19,18 @@ const LoginForm = ({ username, password, setUsername, setPassword, handleLogin }
         <div>
           password
           <input type="text"
+          id="password"
           value={password}
           name="password"
           onChange={({target}) => setPassword(target.value)}
           autoComplete="password"
           />
         </div>
-        <button type="submit">login</button>
+        <button id="loginBtn" type="submit">login</button>
       </form>
 
       <a href={googleUrl}>
-        <button type="button">Login with Google</button>
+        <button id="GoogleLoginBtn" type="button">Login with Google</button>
       </a>
     </>
   )

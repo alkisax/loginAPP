@@ -50,6 +50,7 @@ const NewUserForm = ({ url }) =>{
         <div>
           username
           <input type="text"
+          id='createUsername'
           value={username}
           name="username"
           onChange={({target}) => setUsername(target.value)}
@@ -59,6 +60,7 @@ const NewUserForm = ({ url }) =>{
         <div>
           name
           <input type="text"
+          id='createName'
           value={name}
           name="name"
           onChange={({target}) => setName(target.value)}
@@ -68,6 +70,7 @@ const NewUserForm = ({ url }) =>{
         <div>
           email
           <input type="email"
+          id='createEmail'
           value={email}
           name="email"
           onChange={({target}) => setEmail(target.value)}
@@ -94,13 +97,14 @@ const NewUserForm = ({ url }) =>{
         <div>
           password
           <input type="text"
+          id='createPassword'
           value={password}
           name="password"
           onChange={({target}) => setPassword(target.value)}
           autoComplete="password"
           />
         </div>
-        <button type="submit">submit</button>
+        <button id='submitCreateBtn' type="submit">submit</button>
       </form>
     </>
   )

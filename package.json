@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "cross-env NODE_ENV=test jest --testTimeout=50000  --runInBand"
+    "test": "cross-env NODE_ENV=test jest --testTimeout=50000  --runInBand",
+    "start:test": "NODE_ENV=test node index.js"
   },
   "jest": {
     "collectCoverage": true,

@@ -106,7 +106,7 @@ const App = () => {
 
       {/* Universal Home Button */}
       <Link to="/" className="home-btn">
-        <button>Home</button>
+        <button id='home'>Home</button>
       </Link>
 
       {/* Routes here handle sub-pages like /admin */}
