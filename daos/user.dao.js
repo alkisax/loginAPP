@@ -17,9 +17,14 @@ const createUser = async (userData) => {
   return await user.save();
 };
 
+const deleteUserById = async (userId) => {
+  return await User.findByIdAndDelete(userId)
+}
+
 module.exports = {
   findAllUsers,
   findUserByUsername,
   findUserByEmail,
-  createUser
+  createUser,
+  deleteUserById
 };

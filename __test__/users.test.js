@@ -141,4 +141,50 @@ describe('POST /api/users', () => {
 
     expect(res.status).toBe(400);
   });
+
+  it('creates a user and then deletes it', async () => {
+    const newUser = {
+      username: 'deleteme',
+      name: 'deleteme',
+      email: 'deleteme@example.com',
+      password: '123',
+      roles: ['user']
+    };
+
+    // First, create a user with this username
+    const toBeDeletedUser = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newUser)
+      .expect(201)
+
+    // try to retrive user id
+    const userId = toBeDeletedUser.body._id
+    expect(userId).toBeDefined()
+
+    await request(app)
+      .delete(`/api/users/${userId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+  });
+  it('delete with no id expext 404', async () => {
+    await request(app)
+    .delete(`/api/users/`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(404)
+  })
+  it('delete with invalid id expect 404', async () => {
+    const justAWrongId = '60c72b2f9b1e8b1a8b2a3c4d' //invalid id but valid mongo format
+    await request(app)
+    .delete(`/api/users/${justAWrongId}`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(404)
+  })
+  it('delete with invalid id expect 500', async () => {
+    const justAWrongId = 'invalid id format' //invalid id and invalid mongo format
+    await request(app)
+    .delete(`/api/users/${justAWrongId}`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(500)
+  })
 });

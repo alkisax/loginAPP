@@ -5,5 +5,6 @@ const { verifyToken, checkRole } = require('../middlewares/verification.middlewa
 
 router.get ('/', verifyToken, checkRole('admin'), userController.findAll)
 router.post('/', userController.create)
+router.delete('/:id', verifyToken, checkRole('admin'), userController.deleteById)
 
 module.exports = router
