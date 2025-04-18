@@ -12,8 +12,14 @@ const logger = require('./logger/logger.js');
 const swaggerSpec = require('./swagger.js');
 const swaggerUI = require('swagger-ui-express')
 
+const corsOptions = {
+  origin: 'http://localhost:5173', // Adjust this to your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
 const app = express()
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(express.static('dist')) // να το δοκιμασω
 app.use(express.json());
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec)); // Set up Swagger UI endpoint
