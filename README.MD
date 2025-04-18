@@ -2695,6 +2695,27 @@ const NewUserForm = ({ url, users, setUsers }) =>{
 -- http://localhost:5173/
 -- https://loginapp-tjlf.onrender.com/api/login/google/callback
 
-# ***TODO remove hardcoded Url from auth.controller.js and create FRONTEND_URL env variable ***
+## στο render -> enviroment
+REDIRECT_URI=https://loginapp-tjlf.onrender.com/api/login/google/callback
+
+## αποθηκεύω το νέο google log in στο auth.routes.js
+// https://accounts.google.com/o/oauth2/auth?client_id=37391548646-a2tj5o8cnvula4l29p8lodkmvu44sirh.apps.googleusercontent.com&redirect_uri=https://loginapp-tjlf.onrender.com/api/login/google/callback&response_type=code&scope=email%20profile&access_type=offline
+
+# fix Cannot GET /google-success
+# fix /admin refresh
+# ***ΘΕΛΕΙ ΕΞΗΓΗΣΗ ΓΙΑΤΙ ΑΠΛΟΣ ΤΟ ΠΕΙΡΑ ΑΠΟ ΤΟ GPT**
+## στο app.js στο back προσθέτω
+```javascript
+const path = require('path'); // requires explanation. added for rendering front page subpages
+// [...]
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) return res.status(404).json({
+     error: 'API route not found'
+    }); // requires explanation. added for rendering front page subpages
+
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+```
+## ***TODO remove hardcoded Url from auth.controller.js and create FRONTEND_URL env variable ***
 
 
