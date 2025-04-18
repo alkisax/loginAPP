@@ -2716,6 +2716,16 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 ```
+# change in loginApp.cy.js
+```
+// const urlB = 'http://localhost:3000'
+// const urlF = 'http://localhost:5173'
+const urlB = 'https://loginapp-tjlf.onrender.com/api'
+const urlF = 'https://loginapp-tjlf.onrender.com'
+```
+## ***TODO cypress/jest***
+
 ## ***TODO remove hardcoded Url from auth.controller.js and create FRONTEND_URL env variable ***
+## ***TODO delete does not rerender ***
 
 

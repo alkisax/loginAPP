@@ -1,7 +1,9 @@
 describe ('Login App', () =>{
 
-const urlB = 'http://localhost:3000'
-const urlF = 'http://localhost:5173'
+// const urlB = 'http://localhost:3000'
+// const urlF = 'http://localhost:5173'
+const urlB = 'https://loginapp-tjlf.onrender.com/api'
+const urlF = 'https://loginapp-tjlf.onrender.com'
 
 // για τα τεστ μου θα δημιουργήσω δύο χρηστες έναν αντμιν και έναν οχι. Στην αρχή θα πάρω τα τοκεν και τα id, για να τα χρησιμοποιήσω για να τους σβήσω στο τέλος του τεστ
 const user = {
