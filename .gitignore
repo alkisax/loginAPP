@@ -89,7 +89,11 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+# Ignore the dist inside frontend
+notes/loginApp/frontend/dist/
+
+# But don't ignore the dist inside loginApp (force include)
+!notes/loginApp/dist/
 
 # Gatsby files
 .cache/
