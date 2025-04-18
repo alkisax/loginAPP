@@ -2547,3 +2547,154 @@ npm run cypress:open
 
 # **Deploy**
 
+### στο .gitignore αντικαθηστω το dist με 
+```
+# Ignore the dist inside frontend
+notes/loginApp/frontend/dist/
+
+# But don't ignore the dist inside loginApp (force include)
+!notes/loginApp/dist/
+```
+
+### https://dashboard.render.com
+- +create new service
+- web services
+- -> git provider -> https://github.com/alkisax/loginAPP -> credentials -> alkisax -> configure in github -> authenticate -> loginAPP
+- Free
+- Προσθηκη .env variables
+-- MONGODB_URI
+-- SECRET
+-- JWT_SECRET
+-- GOOGLE_CLIENT_ID
+-- GOOGLE_CLIENT_SECRET
+-- REDIRECT_URI
+-- APP_URL
+- Deploy web service
+- setings
+-- (start command 'npm start')
+
+# αλλαγή των Url
+## App.js
+```
+const url = 'https://loginapp-tjlf.onrender.com/api'
+```
+
+# ***ERROR*** runs only when local back open
+# ***IMPORTANT*** *απο εδώ και πέρα ολες οι αλλαγες στο front απαιτουν nmp run build, αλλαγή των φακέλων dist και νέο git push*
+
+#### Απο το chatGPT: When you call: window.location.reload() It forces a full-page reload, and React Router tries to resolve the route (e.g., /admin) by making a direct GET request to the server (https://loginapp-tjlf.onrender.com/admin). But your backend doesn’t have a route for /admin, because it's a frontend-only route managed by React Router — hence the 404 error
+## App.jsx
+```javascript
+  const [users, setUsers] = useState([])
+//[...]
+  const handleDeleteUser = async (userId) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this user?")
+    if (!isConfirmed) {
+      console.log("User deletion cancelled");
+      return; // Exit the function if the user cancels
+    }
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.delete(`${url}/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setTimeout(() => {
+        setMessage("User is deleted");
+      }, 7000);
+      console.log("User deleted", response.data);
+      alert('User deleted successfully!')
+
+      // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
+      // window.location.reload()
+      setUsers(users.filter(user => user.id !== userId)); // αυτο προστεθηκε γιατι δεν πρεπει να κανεις ανανεωση της σελιδας σε single page app
+
+    } catch (error) {
+      console.error("Failed to delete user", error.response?.data || error.message);
+    }
+  };
+// [...]
+            <AdminPanel
+              url={url}
+              handleDeleteUser={handleDeleteUser}
+              users={users}
+              setUsers={setUsers}
+            />
+```
+## AdminPanel.jsx
+```javascript
+const AdminPanel = ({url, handleDeleteUser, users, setUsers}) => {
+// [...]
+      <button id="createUserBtn" onClick={() => setViewForm(!viewForm)}>create user form</button>
+      {viewForm && <NewUserForm users={users} setUsers={setUsers} url={url} />}
+```
+## NewUserForm.jsx
+```javascript
+const NewUserForm = ({ url, users, setUsers }) =>{
+// [...]
+  const handleSubmitUser = async (event) => {
+    event.preventDefault()
+    
+    try {
+      const newUser = {
+        "username": username,
+        "name": name,
+        "email": email,
+        "password": password,
+        "roles": roles
+      }
+
+      const response = await axios.post(`${url}/users`, newUser)
+
+      console.log('✅ User created:', response.data)
+      alert('User created successfully!')
+
+      // Clear the form if needed
+      setUsername('')
+      setName('')
+      setEmail('')
+      setPassword('')
+      setRoles(['user'])
+
+      // Redirect to /admin after creating the user
+      // navigate('/admin');
+      // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
+      // window.location.reload()
+      // Update users list directly
+      setUsers([...users, response.data]); // αυτο προστεθηκε γιατι δεν πρεπει να κανεις ανανεωση της σελιδας σε single page app
+
+    } catch (error) {
+      console.error('Error creating user:', error)
+    }
+  }
+
+```
+# **ERROR** google login URI points local
+## App.jsx
+```javascript
+            <LoginForm 
+              username={username}
+              password={password}
+              setUsername={setUsername}
+              setPassword={setPassword}
+              handleLogin={handleLogin}
+              url={url} // περνάω το url
+            />}
+```
+## LoginForm.jsx
+```javascript
+  // const googleUrl = 'https://accounts.google.com/o/oauth2/auth?client_id=37391548646-a2tj5o8cnvula4l29p8lodkmvu44sirh.apps.googleusercontent.com&redirect_uri=http://localhost:3000/api/login/google/callback&response_type=code&scope=email%20profile&access_type=offline'
+  const googleUrl = `https://accounts.google.com/o/oauth2/auth?client_id=37391548646-a2tj5o8cnvula4l29p8lodkmvu44sirh.apps.googleusercontent.com&redirect_uri=${url}/login/google/callback&response_type=code&scope=email%20profile&access_type=offline`;
+```
+
+## στο https://console.cloud.google.com/auth/clients/
+- Authorized redirect URIs
+-- http://localhost:3000/api/login/google/callback
+-- http://localhost:5173/
+-- https://loginapp-tjlf.onrender.com/api/login/google/callback
+
+# ***TODO remove hardcoded Url from auth.controller.js and create FRONTEND_URL env variable ***
+
+

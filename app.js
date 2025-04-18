@@ -12,6 +12,8 @@ const logger = require('./logger/logger.js');
 const swaggerSpec = require('./swagger.js');
 const swaggerUI = require('swagger-ui-express')
 
+const path = require('path'); // requires explanation. added for rendering front page subpages
+
 const app = express()
 app.use(cors())
 app.use(express.static('dist')) // να το δοκιμασω
@@ -26,5 +28,13 @@ app.use((req, res, next) => {
 app.use('/api/users', userRoutes)
 app.use('/api/login', authRoutes)
 app.use('/api/message', messageRoutes)
+
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) return res.status(404).json({
+     error: 'API route not found'
+    }); // requires explanation. added for rendering front page subpages
+
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 module.exports = app
