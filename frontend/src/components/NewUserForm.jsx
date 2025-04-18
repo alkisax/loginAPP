@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import {useState} from 'react'
 import axios from 'axios'
 
@@ -38,8 +39,8 @@ const NewUserForm = ({ url, users, setUsers }) =>{
       // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
       // window.location.reload()
       // Update users list directly
-      setUsers([...users, response.data]); // αυτο προστεθηκε γιατι δεν πρεπει να κανεις ανανεωση της σελιδας σε single page app
-
+      // setUsers([...users, response.data]); // αυτο προστεθηκε γιατι δεν πρεπει να κανεις ανανεωση της σελιδας σε single page app
+      setUsers(current => [...current, response.data]); // Take the current state (users) and add the new user (response.data) to the end of the array
     } catch (error) {
       console.error('Error creating user:', error)
     }

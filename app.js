@@ -12,12 +12,6 @@ const logger = require('./logger/logger.js');
 const swaggerSpec = require('./swagger.js');
 const swaggerUI = require('swagger-ui-express')
 
-// const corsOptions = {
-//   origin: 'http://localhost:5173', // Adjust this to your frontend URL
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//   allowedHeaders: ['Content-Type', 'Authorization'],
-// };
-
 const app = express()
 app.use(cors())
 app.use(express.static('dist')) // να το δοκιμασω
@@ -31,7 +25,6 @@ app.use((req, res, next) => {
 
 app.use('/api/users', userRoutes)
 app.use('/api/login', authRoutes)
-// app.use('/api/auth', authRoutes)
-app.use('/api/message',messageRoutes)
+app.use('/api/message', messageRoutes)
 
 module.exports = app
