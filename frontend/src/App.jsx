@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import {
@@ -74,6 +73,31 @@ const App = () => {
     navigate("/admin")   
   }
 
+  const handleDeleteUser = async (userId) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this user?")
+    if (!isConfirmed) {
+      console.log("User deletion cancelled");
+      return; // Exit the function if the user cancels
+    }
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.delete(`${url}/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setTimeout(() => {
+        setMessage("User is deleted");
+      }, 7000);
+      console.log("User deleted", response.data);
+      alert('User deleted successfully!')
+      // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
+      window.location.reload()
+    } catch (error) {
+      console.error("Failed to delete user", error.response?.data || error.message);
+    }
+  };
+
   return (
     <div>
       <h6>{message}</h6>
@@ -111,6 +135,7 @@ const App = () => {
             <ProtectedRoute user={user} requiredRole="admin"></ProtectedRoute>
             <AdminPanel
               url={url}
+              handleDeleteUser={handleDeleteUser}
             />
           </>
         } />  
@@ -119,8 +144,8 @@ const App = () => {
           <GoogleSuccess setUser={setUser} setUserIsAdmin={setUserIsAdmin} />
         } />
 
-          <Route path="/users" element={<AdminPanel url={url} />} />
-          <Route path="/users/:id" element={<UserDetail />} />
+        <Route path="/users" element={<AdminPanel handleDeleteUser={handleDeleteUser} url={url} />} />
+        <Route path="/users/:id" element={<UserDetail />} />
       </Routes>
     </div>
   )

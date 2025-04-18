@@ -2270,6 +2270,74 @@ router.delete('/:id', verifyToken, checkRole('admin'), userController.deleteById
   })
 ```
 
+# front end delete functionality
+## App.jsx
+```javascript
+  const handleDeleteUser = async (userId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.delete(`${url}/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setTimeout(() => {
+        setMessage("User is deleted");
+      }, 7000);
+      console.log("User deleted", response.data);
+    } catch (error) {
+      console.error("Failed to delete user", error.response?.data || error.message);
+    }
+  };
+```
+#### στο return (προσθεσα τα handleDeleteUser)
+```javascript
+            <AdminPanel
+              url={url}
+              handleDeleteUser={handleDeleteUser}
+            />
+          </>
+        } />  
+
+        <Route path="/google-success" element={
+          <GoogleSuccess setUser={setUser} setUserIsAdmin={setUserIsAdmin} />
+        } />
+
+        <Route path="/users" element={<AdminPanel handleDeleteUser={handleDeleteUser} url={url} />} />
+        <Route path="/users/:id" element={<UserDetail />} />
+
+```
+## στο return του AdminPanel.jsx (εκει που δημιουργεί την λίστα)
+```javascript
+              <li key={user._id || `${user.username}-${user.email}`}>
+                 <Link to={`/users/${user._id}`}>
+                  {user.username}
+                 </Link>
+                 - {user.name} - {user.email} - {user.roles.join(", ")}
+                 <button onClick={() => handleDeleteUser(user._id)}>Delete</button>
+              </li>
+```
+
+# Μικροπροβλημα με μη άμεσο responce στο render αν δημιουργώ ή σβήνω χρήστη
+## στο App.jsx στην handleDeleteUser προσθεσα
+```javascript
+    const isConfirmed = window.confirm("Are you sure you want to delete this user?")
+    if (!isConfirmed) {
+      console.log("User deletion cancelled");
+      return; // Exit the function if the user cancels
+    }
+// [...]
+      alert('User deleted successfully!')
+      // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
+      window.location.reload()
+```
+
+## και το ιδιο και στο NewUserForm.jsx στην handleSubmitUser
+```javascript
+      // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
+      window.location.reload()
+```
+
 ## cypress tests
 
 

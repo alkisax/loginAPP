@@ -33,6 +33,11 @@ const NewUserForm = ({ url }) =>{
       setPassword('')
       setRoles(['user'])
 
+      // Redirect to /admin after creating the user
+      // navigate('/admin');
+      // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
+      window.location.reload()
+
     } catch (error) {
       console.error('Error creating user:', error)
     }

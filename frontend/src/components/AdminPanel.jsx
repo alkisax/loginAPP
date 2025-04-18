@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import NewUserForm from './NewUserForm'
 
-const AdminPanel = ({url}) => {
+const AdminPanel = ({url, handleDeleteUser}) => {
   const [viewForm, setViewForm] = useState(false)
   const [users, setUsers] = useState([]); 
   const [loading, setLoading] = useState(true);
@@ -43,6 +43,7 @@ const AdminPanel = ({url}) => {
                   {user.username}
                  </Link>
                  - {user.name} - {user.email} - {user.roles.join(", ")}
+                 <button onClick={() => handleDeleteUser(user._id)}>Delete</button>
               </li>
             )
           })
