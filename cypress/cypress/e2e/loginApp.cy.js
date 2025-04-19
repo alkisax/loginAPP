@@ -2,7 +2,7 @@ describe ('Login App', () =>{
 
 // const urlB = 'http://localhost:3000'
 // const urlF = 'http://localhost:5173'
-const urlB = 'https://loginapp-tjlf.onrender.com/api'
+const urlB = 'https://loginapp-tjlf.onrender.com'
 const urlF = 'https://loginapp-tjlf.onrender.com'
 
 // για τα τεστ μου θα δημιουργήσω δύο χρηστες έναν αντμιν και έναν οχι. Στην αρχή θα πάρω τα τοκεν και τα id, για να τα χρησιμοποιήσω για να τους σβήσω στο τέλος του τεστ
@@ -125,14 +125,14 @@ let token2 = null
     cy.get('#createPassword').type('123')
     cy.wait(500)
     cy.get('#submitCreateBtn').click()
-    cy.wait(5000)
-    cy.get('#adminBtn').click()
-    cy.wait(5000)
+    // cy.wait(5000)
+    // cy.get('#adminBtn').click()
+    cy.wait(500)
     cy.get('#DeleteMeBtn').should('exist')
     cy.get('#DeleteMeBtn').click()
-    cy.wait(5000)
-    cy.get('#adminBtn').click()
-    cy.wait(5000)
+    // cy.wait(5000)
+    // cy.get('#adminBtn').click()
+    cy.wait(500)
     cy.contains('DeleteMe').should('not.exist')
     // cy.wait(5000)
     // cy.get('#logoutBtn').click()

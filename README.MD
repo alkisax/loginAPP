@@ -2716,20 +2716,35 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 ```
-# change in loginApp.cy.js
-```
-// const urlB = 'http://localhost:3000'
-// const urlF = 'http://localhost:5173'
-const urlB = 'https://loginapp-tjlf.onrender.com/api'
-const urlF = 'https://loginapp-tjlf.onrender.com'
-```
 # delete does not rerender
 ## στο App.jsx αλλαξε απλώς το user.id σε user._id
 ```
       setUsers(users.filter(user => user._id !== userId));
 ```
-## ***TODO cypress/jest***
+
 ## ***TODO remove hardcoded Url from auth.controller.js and create FRONTEND_URL env variable ***
+### στο .env και στα enviroment του Render
+```
+FRONTEND_URL=https://loginapp-tjlf.onrender.com
+```
+## στο auth.controller.js
+  const frontendUrl = process.env.FRONTEND_URL
+  return res.redirect(`${frontendUrl}/google-success?token=${token}&email=${dbUser.email}`);
+
+
+# change in loginApp.cy.js
+```
+// const urlB = 'http://localhost:3000'
+// const urlF = 'http://localhost:5173'
+const urlB = 'https://loginapp-tjlf.onrender.com'
+const urlF = 'https://loginapp-tjlf.onrender.com'
+```
+### αφαιρέθηκαν μερικές γραμμες γιατι ήταν πια περιτές λογο του rerender
+```
+    // cy.wait(5000)
+    // cy.get('#adminBtn').click()
+```
+## τα τεστ τρέχουν απο το φακελο του cypress με npm run cypress:open
 
 
 
