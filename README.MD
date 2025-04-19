@@ -2723,9 +2723,13 @@ app.get('*', (req, res) => {
 const urlB = 'https://loginapp-tjlf.onrender.com/api'
 const urlF = 'https://loginapp-tjlf.onrender.com'
 ```
+# delete does not rerender
+## στο App.jsx αλλαξε απλώς το user.id σε user._id
+```
+      setUsers(users.filter(user => user._id !== userId));
+```
 ## ***TODO cypress/jest***
-
 ## ***TODO remove hardcoded Url from auth.controller.js and create FRONTEND_URL env variable ***
-## ***TODO delete does not rerender ***
+
 
 

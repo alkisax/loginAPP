@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import {
@@ -89,21 +90,18 @@ const App = () => {
         }
       });
 
-      setTimeout(() => {
-        setMessage("User is deleted");
-      }, 7000);
       console.log("User deleted", response.data);
       alert('User deleted successfully!')
 
       // ✅ απλό "φρεσκάρισμα" της σελίδας για να ξανατραβήξει τα δεδομένα
       // window.location.reload()
-      setUsers(users.filter(user => user.id !== userId)); // αυτο προστεθηκε γιατι δεν πρεπει να κανεις ανανεωση της σελιδας σε single page app
+      setUsers(users.filter(user => user._id !== userId)); // αυτο προστεθηκε γιατι δεν πρεπει να κανεις ανανεωση της σελιδας σε single page app
 
     } catch (error) {
       console.error("Failed to delete user", error.response?.data || error.message);
     }
   };
-
+  
   return (
     <div>
       <h6>{message}</h6>
