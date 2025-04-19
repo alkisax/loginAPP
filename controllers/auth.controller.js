@@ -180,17 +180,8 @@ exports.googleLogin = async(req, res) => {
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
 
   // return res.redirect(`http://localhost:5173/google-success?token=${token}&email=${dbUser.email}`);
-  return res.redirect(`https://loginapp-tjlf.onrender.com/google-success?token=${token}&email=${dbUser.email}`);
-  // TODO remove hardcoded Url and create FRONTEND_URL env variable 
-
-  // else {
-    // let {user} = await authService.googleAuth(code)
-    // if (user && user.email) {
-    //   logger.info(`User ${user.email} logged in via Google`);
-    // } else {
-    //   logger.info('Google login succeeded, but user info is incomplete');
-    // }
-    // return res.redirect('http://localhost:5173/')
-  // }
+  // return res.redirect(`https://loginapp-tjlf.onrender.com/google-success?token=${token}&email=${dbUser.email}`);
+  const frontendUrl = process.env.FRONTEND_URL
+  return res.redirect(`${frontendUrl}/google-success?token=${token}&email=${dbUser.email}`);
 }
 
